@@ -1,7 +1,7 @@
 const Peer = window.Peer;
 var room_id;
 
-function wait_sleep() { // 1秒間sleepする．
+function wait_sleep() {
   return new Promise(resolve => {
     
     var timer =setInterval(()=>{
@@ -10,36 +10,10 @@ function wait_sleep() { // 1秒間sleepする．
           clearInterval(timer);
         }
       },100);
-    
-    // setTimeout(() => {
-    //   resolve();
-    // }, 1000); 
   })
 }
 
-// function get_roomId() { // 1秒間sleepする．
-//   return new Promise(resolve => {
-//     var timer =setInterval(()=>{
-//       if( 1 < window.location.search.length ){
-//         var query = window.location.search.substring( 1 );
-//         var parameters = query.split( '&' );
-//         if( parameters.length>1){console.log('toomany parameter of GET');}
-//         else{
-//             var parameter=parameters[0].split('=');
-//             var paramName=decodeURIComponent(parameter[0]);
-//             var paramValue=decodeURIComponent(parameter[1]);
-//             if(paramName=='roomid'){room_id=paramValue;}
-//             console.log('roomid'+room_id+'を設定')
-//         }
-//         resolve(room_id);
-//         clearInterval(timer);
-//     }
-//       },100);
-//   })
-// }
-
-function get_query(){
-  var result = {};
+function get_roomId(){
   if( 1 < window.location.search.length ){
       var query = window.location.search.substring( 1 );
       var parameters = query.split( '&' );
@@ -52,18 +26,13 @@ function get_query(){
             room_id=paramValue;
             return room_id;
           }
-          console.log('roomid'+room_id+'を設定')
       }
   }
 };
 
 (async function main() {
   const localVideo = document.getElementById('js-local-stream');
-  const joinTrigger = document.getElementById('js-join-trigger');
   const leaveTrigger = document.getElementById('js-leave-trigger');
-  const roomId = document.getElementById('js-room-id');
-  const localText = document.getElementById('js-local-text');
-  const sendTrigger = document.getElementById('js-send-trigger');
   const messages = document.getElementById('js-messages');
 
   var count_stream=-1
@@ -74,14 +43,7 @@ function get_query(){
    }
   console.log(person_array);
 
-  // とりあえず
-  // const roomID_html = document.getElementById('roomID');
-  // room_id=roomID_html.textContent
-  // get_roomId().then(result=>{
-  //   console.log("fassdfaf");
-  //   room_id=result;
-  // });
-   room_id=get_query();
+  room_id=get_roomId();
   console.log('roomID is '+room_id);
 
   const getRoomModeByHash = 'sfu';
@@ -109,11 +71,6 @@ function get_query(){
   // Note that you need to ensure the peer has connected to signaling server
   // before using methods of peer instance.
   wait_sleep().then(result => {
-  // const promise1 = wait_sleep();
-  // const promise2 = get_roomId();
-  // Promise.all([promise1, promise2]).then((values) => {
-  //   room_id=values[1];
-  //   console.log('roomID is '+room_id);
     console.log("show streams",peer.open);
     if (!peer.open) {
       console.log("peer is not open")
@@ -164,7 +121,6 @@ function get_query(){
 
     // for closing myself
     room.once('close', () => {
-      sendTrigger.removeEventListener('click', onClickSend);
       messages.textContent += '== You left ===\n';
       console.log(person_array);
       person_array.forEach(remoteVideo => {
@@ -174,19 +130,8 @@ function get_query(){
       });
     });
 
-
-    sendTrigger.addEventListener('click', onClickSend);
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
-
-    function onClickSend() {
-      // Send message to all of the peers in the room via websocket
-      room.send(localText.value);
-
-      messages.textContent += `${peer.id}: ${localText.value}\n`;
-      localText.value = '';
-    }
   });
-  // };
 
   peer.on('error', console.error);
 })();
