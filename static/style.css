@@ -1,0 +1,44 @@
+
+html{
+    background-color:#004840;
+}
+.player-name{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height:50px;
+    font-size:30px;
+    font-family: 'Lobster', cursive;
+    margin:0;
+}
+
+#start-msg{
+    font-family: 'Lobster', cursive;
+    font-size:50px;
+    position:absolute;
+    top:45%;
+    left:50%;
+    transform: translateY(-50%) translateX(-50%);
+    color:#daa520;
+    z-index: 999;
+}
+.win-msg{
+    font-family: 'Lobster', cursive;
+    font-size:30px;
+    position:absolute;
+    top: 10px;
+    left: 50%;
+    color:#daa520;
+    margin:0;
+    height:50px;
+}
+
+.game-canvas{
+    /* width:450px;
+    height:300px; */
+    object-fit: fill;
+    background-color: 'yellow';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
