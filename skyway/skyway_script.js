@@ -34,6 +34,8 @@ function get_roomId(){
   const localVideo = document.getElementById('js-local-stream');
   const leaveTrigger = document.getElementById('js-leave-trigger');
   const messages = document.getElementById('js-messages');
+  const audioMuteTriger = document.getElementById('audio_mute_trigger');
+  const videoMuteTriger = document.getElementById('video_mute_trigger');
 
   var count_stream=-1
   const num_person = 3
@@ -129,6 +131,39 @@ function get_roomId(){
         remoteVideo.remove();
       });
     });
+
+    function audio_toggle(){
+      localStream.getAudioTracks().forEach((track) => {
+        if (track.enabled){
+          track.enabled = false;
+          console.log('audio off')
+          audioMuteTriger.textContent="ミュート解除"
+        }
+        else{
+          track.enabled = true;
+          console.log('audio on')
+          audioMuteTriger.textContent="ミュート"
+        }
+      });
+    }
+
+    function video_toggle(){
+      localStream.getVideoTracks().forEach((track) => {
+        if (track.enabled){
+          track.enabled = false;
+          console.log('video off')
+          videoMuteTriger.textContent="ビデオの開始"
+        }
+        else{
+          track.enabled = true;
+          console.log('video on')
+          videoMuteTriger.textContent="ビデオの停止"
+        }
+      });
+    }
+
+    audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
+    videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
 
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
   });

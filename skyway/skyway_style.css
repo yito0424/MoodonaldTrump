@@ -66,3 +66,16 @@
   left: 0;
 }
 
+#audio_mute_trigger{
+  position: absolute;
+  background-color:whitesmoke;
+  top: 50px;
+  left: 10px;
+}
+
+#video_mute_trigger{
+  position: absolute;
+  background-color:whitesmoke;
+  top: 50px;
+  left: 100px;
+}
