@@ -31,6 +31,7 @@ function get_roomId(){
 };
 
 (async function main() {
+
   const localVideo = document.getElementById('js-local-stream');
   const leaveTrigger = document.getElementById('js-leave-trigger');
   const messages = document.getElementById('js-messages');
@@ -79,6 +80,7 @@ function get_roomId(){
       return;
     }
 
+    console.log('your id is gotten',yourid);
     const room = peer.joinRoom(room_id, {
       mode: getRoomModeByHash,
       stream: localStream,
@@ -91,6 +93,7 @@ function get_roomId(){
       messages.textContent += `=== ${peerId} joined ===\n`;
     });
     
+
     // Render remote stream for new peer join in the room
     room.on('stream', async stream => {
       count_stream++

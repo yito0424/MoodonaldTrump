@@ -35,7 +35,6 @@ const mark={
   };
 
 function get_query(){
-    const roomID_html = document.getElementById('roomID');
     var result = {};
     if( 1 < window.location.search.length ){
         var query = window.location.search.substring( 1 );
@@ -45,14 +44,10 @@ function get_query(){
             var parameter=parameters[0].split('=');
             var paramName=decodeURIComponent(parameter[0]);
             var paramValue=decodeURIComponent(parameter[1]);
-            if(paramName=='roomid'){
-                roomid=paramValue;
-                roomID_html.textContent=roomid;
-            }
+            if(paramName=='roomid'){roomid=paramValue;}
             console.log('roomid'+roomid+'を設定')
         }
     }
-    
 }
 
 
@@ -109,6 +104,7 @@ function draw_card(canvas_id,context,card){
 }
 
 function choose_card(event){
+    console.log('スタートフラッグが0?');
     if(startflag==0){return;}
     var canvasrect = this.canvas.getBoundingClientRect();
     const x=event.clientX-canvasrect.left;
@@ -186,8 +182,6 @@ function move_cursor(event){
     var y=event.clientY-canvasrect.top;
     var pull_player=player_list[yourid];
     var pulled_player=player_list[CanvasNametoId[canvas.id]];
-    console.log(pull_player.status);
-    console.log(pulled_player.status);
 
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         socket.emit('cursor',canvas.id,x,y);
@@ -247,7 +241,7 @@ async function wait_and_reset(sec,reset_flag){
         startflag=0;
         console.log('0にしました');
     }
-    StartMsg.innerHTML='Press Shift to Start';
+    StartMsg.innerHTML='Press Space to Start';
 }
 
 document.addEventListener('keydown', (event) => {
@@ -297,7 +291,7 @@ socket.on('finish',()=>{
 
 socket.on('location', (players,cursor) => {
     player_list=players;
-    // console.log(players);
+    console.log(players);
     Object.values(players).forEach((player,idx)=>{
         if(player.status=='pulled' || player.status=='pull'){
             const canvas=document.getElementById('canvas'+String(player.id));
@@ -343,6 +337,7 @@ socket.on('location', (players,cursor) => {
 socket.on('disconnected',()=>{
     StartMsg.innerHTML='Someone disconnected';
     player_list={};
+    player_leave();
     player_join();
     socket.emit('remove-interval');
     wait_and_reset(5,1);

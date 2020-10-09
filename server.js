@@ -2,18 +2,20 @@ const express = require('express');
 const http=require('http');
 const path = require('path');
 const socketIO = require('socket.io');
+const redis = require("redis");
+const { decycle, encycle } = require('json-cyclic');
 const app = express();
 const server = http.Server(app);
 const io = socketIO(server);
+const port=process.env.PORT || 3000
 
-var playerid=0;
-var player_num=0;
-var winner_num=0;
-var player_list={}
-var cursor={
-  x:null,
-  y:null
-}
+const mark={
+  1:'heart',
+  2:'spade',
+  3:'diamond',
+  4:'club',
+  5:'joker'
+};
 const ALL_CARD_NUM=53;
 class Player{
   constructor(id){
@@ -22,15 +24,43 @@ class Player{
     this.status=null;
     this.rank=0;
   }
-  pullcard(pulled_card_idx){
-      this.cardlist.splice(pulled_card_idx,1);
-  }
-  addcard(card){
-    this.cardlist.push(card);
-  }
-  setstatus(status){
-    this.status=status;
-  }
+}
+
+function executive_access(socket,redisClient,roomid){
+  redisClient.watch(roomid,(watchError)=>{
+    if(watchError)throw watchError;
+    redisClient.get(roomid,(error, value) =>{
+      if(error)throw error;
+      var roomObject=JSON.parse(value);
+      console.log(roomObject);
+      roomObject.playerid++;
+      roomObject.player_num++;
+      const player=new Player(roomObject.playerid);
+      roomObject.player_list[roomObject.playerid]=player;
+      console.log(roomObject);
+      redisClient
+      .multi()
+      .set(roomid, JSON.stringify(roomObject))
+      .exec((error,results)=>{
+        if(error)throw error;
+        console.log('results='+results);
+        if(results==null){
+          executive_access(socket,redisClient,roomid);
+        }
+        socket.emit('joined',roomObject.playerid);
+      })
+    });
+  })
+}
+
+function pullcard(playerObject,pulled_card_idx){
+  playerObject.cardlist.splice(pulled_card_idx,1);
+}
+function addcard(playerObject,card){
+  playerObject.cardlist.push(card);
+}
+function setstatus(playerObject,status){
+  playerObject.status=status;
 }
 
 class Card{
@@ -44,15 +74,8 @@ class Card{
   }
 }
 
-function shuffle_and_distribute(){
+function shuffle_and_distribute(roomObject){
   let all_card=[]
-  const mark={
-    1:'heart',
-    2:'spade',
-    3:'diamond',
-    4:'club',
-    5:'joker'
-  };
   for(var num=1;num<=13;num++){
     for(mk=1;mk<=4;mk++){
       const card=new Card(mark[mk],num);
@@ -70,10 +93,10 @@ function shuffle_and_distribute(){
   //distribute
   var dist_id=1;
   all_card.forEach((card)=>{
-    card.position.x=50+Math.floor(((350-68)*player_list[dist_id].cardlist.length)/Math.floor(ALL_CARD_NUM/player_num));
+    card.position.x=50+Math.floor(((350-68)*roomObject.player_list[dist_id].cardlist.length)/Math.floor(ALL_CARD_NUM/roomObject.player_num));
     card.position.y=100;
-    distribute(dist_id,card);
-    dist_id=dist_id%player_num+1;
+    distribute(roomObject,dist_id,card);
+    dist_id=dist_id%roomObject.player_num+1;
   });
   return all_card;
 }
@@ -84,8 +107,8 @@ function shuffle(array, idx1, idx2) {
   return result;
 }
 
-function distribute(id,card){
-  player_list[id].addcard(card);
+function distribute(roomObject,id,card){
+  addcard(roomObject.player_list[id],card);
 }
 
 function throw_cards(cardlist){
@@ -106,114 +129,221 @@ function throw_cards(cardlist){
   return after_cardlist;
 }
 
-io.on('connection',function(socket){
-  let player=null;
-  socket.on('join',(config)=>{
-    playerid++;
-    player_num++;
-    player=new Player(playerid);
-    player_list[playerid]=player;
-    socket.emit('joined',playerid);
-  });
-  socket.on('start',(config)=>{
-    if(player_num<2){
-      socket.emit('reject');
-      return;
-    }
-    shuffle_and_distribute();
-    Object.values(player_list).forEach((player)=>{
-      console.log('player Changed');
-      player.cardlist=throw_cards(player.cardlist);
+io.on('connection',function(socket){ // 誰かが接続したら実行
+  let roomObject;
+  var playerid;
+  var player_num;
+  var winner_num;
+  let player_list;
+  let player;
+  let timer;
+  const redisClient=redis.createClient();
+
+  socket.on('join',(roomid)=>{ // 部屋に入る時に実行
+    console.log('roomid:',roomid);
+    socket.join(roomid);
+    //socket.removeAllListeners('start','pull','move','cursor','disconnect','remove-interval');
+    console.log('1');
+    io.to(roomid).clients(function(_, clients){ // 同じルームにいるクライアントの一覧を取得（自分が何番目かを取得）
+      if(clients.length==1){
+        console.log('1人目');
+        roomObject={};
+        //初期化
+        roomObject.playerid=1;
+        roomObject.player_num=1;
+        roomObject.winner_num=0;
+        console.log('2');
+        player=new Player(roomObject.playerid);
+        roomObject.player_list={}
+        roomObject.player_list[roomObject.playerid]=player;
+        roomObject.cursor={
+          x:null,
+          y:null
+        }
+        console.log('3');
+        redisClient.set(roomid, JSON.stringify(roomObject));
+        socket.emit('joined',roomObject.playerid);
+      }
+      else if(clients.length<=4){
+        console.log('2人目以降');
+        console.log('------------');
+        executive_access(socket,redisClient,roomid);
+      }
+      else{
+        io.to(roomid).emit('over-notice');
+        return;
+      }
     });
-    io.sockets.emit('distributed',player_list);
 
-    for(var i=1;i<=player_num;i++){
-      if(i==1){player_list[i].status='pulled';}
-      else if(i==2){ player_list[i].status='pull';}
-      else{player_list[i].status='normal';}
-    }
-    io.sockets.emit('started',player_num);
-  });
-  socket.on('pull',(pull_player_id,pulled_card,pulled_card_idx)=>{
-    var pulled_player_id;
-
-    cursor.x=null;
-    cursor.y=null;
+    //スタート時にリスナーをセット
+    console.log('リスナーをセット');
+    socket.on('start',(config)=>{
+      redisClient.get(roomid,(_, value) =>{
+        roomObject=JSON.parse(value);
+        playerid=roomObject.playerid;
+        player_num=roomObject.player_num;
+        winner_num=roomObject.winner_num;
+        player_list=roomObject.player_list;
+        if(player_num<2){
+          io.to(roomid).emit('reject');
+          return;
+        }
+        shuffle_and_distribute(roomObject);
+        Object.values(player_list).forEach((player)=>{
+          console.log('player Changed');
+          player.cardlist=throw_cards(player.cardlist);
+        });
+        io.to(roomid).emit('distributed',player_list);
     
-    Object.values(player_list).forEach((player)=>{
-      if(player.status=='pulled'){
-        pulled_player_id=player.id;
-      }
-    });
-    player_list[pulled_player_id].pullcard(pulled_card_idx);
-    player_list[pull_player_id].addcard(pulled_card);
-    player_list[pull_player_id].cardlist=throw_cards(player_list[pull_player_id].cardlist);
-    io.sockets.emit('location',player_list,cursor);
+        for(var i=1;i<=player_num;i++){
+          if(i==1){ player_list[i].status='pulled';}
+          else if(i==2){ player_list[i].status='pull';}
+          else{ player_list[i].status='normal';}
+        }
+        io.to(roomid).emit('started',player_num);
+        socket.on('push',()=>{
+          io.sockets.emit('pushed');
+        });
+        redisClient.set(roomid, JSON.stringify(roomObject));  
+      });
 
-    //check and set status winner
-    if(player_list[pulled_player_id].cardlist.length==0){
-      winner_num++;
-      console.log('winnernum '+winner_num);
-      player_list[pulled_player_id].status='winner';
-      player_list[pulled_player_id].rank=winner_num;
-    }
-    if(player_list[pull_player_id].cardlist.length==0){
-      winner_num++;
-      console.log('winnernum '+winner_num);
-      player_list[pull_player_id].status='winner';
-      player_list[pull_player_id].rank=winner_num;
-    }
-    if(winner_num<player_num-1){
-      var count=0;
-      for(var i=0;i<player_num;i++){
-        if(player_list[(pulled_player_id+i)%player_num+1].status!='winner'){
-          console.log(count);
-          if(count==0){
-            player_list[(pulled_player_id+i)%player_num+1].status='pulled';
-            count++;
-          }else if(count==1){
-            player_list[(pulled_player_id+i)%player_num+1].status='pull';
-            count++;
-          }else{
-            player_list[(pulled_player_id+i)%player_num+1].status='normal';
+      timer=setInterval(()=>{
+        redisClient.get(roomid,(error,value)=>{
+          roomObject=JSON.parse(value);
+          if(roomObject){
+            io.to(roomid).emit('location',roomObject.player_list,roomObject.cursor);
           }
+        });
+      },1000/30);
+    });     
+    //カードが引かれたとき
+    socket.on('pull',(pull_player_id,pulled_card,pulled_card_idx)=>{
+      var pulled_player_id;
+      console.log('おくられました');
+
+      redisClient.get(roomid,(_,value)=>{
+        roomObject=JSON.parse(value);
+        playerid=roomObject.playerid;
+        player_num=roomObject.player_num;
+        winner_num=roomObject.winner_num;
+        player_list=roomObject.player_list;
+        cursor=roomObject.cursor;
+        cursor.x=null;
+        cursor.y=null;
+
+        Object.values(player_list).forEach((player)=>{
+          if(player.status=='pulled'){
+            pulled_player_id=player.id;
+          }
+        });
+        pullcard(player_list[pulled_player_id],pulled_card_idx);
+        addcard(player_list[pull_player_id],pulled_card);
+        player_list[pull_player_id].cardlist=throw_cards(player_list[pull_player_id].cardlist);
+        io.to(roomid).emit('location',player_list,cursor);
+        //check and set status winner
+        if(player_list[pulled_player_id].cardlist.length==0){
+          roomObject.winner_num++;
+          player_list[pulled_player_id].status='winner';
+          player_list[pulled_player_id].rank=roomObject.winner_num;
         }
-      }
-    }else{
-      for(var i=1;i<=player_num;i++){
-        if(player_list[(pulled_player_id+i)%player_num+1].status!='winner'){
-          player_list[(pulled_player_id+i)%player_num+1].status='loser';
+        if(player_list[pull_player_id].cardlist.length==0){
+          roomObject.winner_num++;
+          player_list[pull_player_id].status='winner';
+          player_list[pull_player_id].rank=roomObject.winner_num;
         }
+        if(roomObject.winner_num<player_num-1){
+          var count=0;
+          for(var i=0;i<player_num;i++){
+            if(player_list[(pulled_player_id+i)%player_num+1].status!='winner'){
+              console.log(count);
+              if(count==0){
+                player_list[(pulled_player_id+i)%player_num+1].status='pulled';
+                count++;
+              }else if(count==1){
+                player_list[(pulled_player_id+i)%player_num+1].status='pull';
+                count++;
+              }else{
+                player_list[(pulled_player_id+i)%player_num+1].status='normal';
+              }
+            }
+          }
+        }else{
+          for(var i=1;i<=player_num;i++){
+            if(player_list[(pulled_player_id+i)%player_num+1].status!='winner'){
+              player_list[(pulled_player_id+i)%player_num+1].status='loser';
+            }
+          }
+          io.to(roomid).emit('location',player_list,cursor);
+          if(timer){
+            clearInterval(timer);
+            console.log('インターバルをクリア');
+          }
+          redisClient.del(roomid);
+          
+          Object.values(io.to(roomid).sockets).forEach((socket)=>{
+            socket.removeAllListeners('start');
+            socket.removeAllListeners('pull');
+            socket.removeAllListeners('move');
+            socket.removeAllListeners('cursor');
+            socket.removeAllListeners('disconnect');
+          });
+          io.to(roomid).emit('finish');
+        }
+        console.log('winner num===='+roomObject.winner_num);
+        redisClient.set(roomid, JSON.stringify(roomObject));
+      });
+    });
+    //カードが動かされたとき
+    socket.on('move',(pulled_player_id,moved_card,moved_card_idx)=>{
+      redisClient.get(roomid,(_,value)=>{
+        roomObject=JSON.parse(value);
+        pullcard(roomObject.player_list[pulled_player_id],moved_card_idx);
+        addcard(roomObject.player_list[pulled_player_id],moved_card);
+        redisClient.set(roomid, JSON.stringify(roomObject));
+      });
+    });
+    //キャンバス上にカーソルがきたとき
+    socket.on('cursor',(id,x,y)=>{
+      redisClient.get(roomid,(_,value)=>{
+        roomObject=JSON.parse(value);
+        roomObject.cursor.x=x;
+        roomObject.cursor.y=y;
+        redisClient.set(roomid,JSON.stringify(roomObject));
+      });
+    });
+    socket.on('leave',()=>{
+      socket.leave(roomid);
+      console.log('leaveしました');
+      socket.removeAllListeners('leave');
+    })
+    socket.on('disconnect',()=>{
+      if(timer){
+        clearInterval(timer);
+        console.log('インターバルをクリア');
       }
-      io.sockets.emit('location',player_list,cursor);
-      io.sockets.emit('finish');
-      player_list={};
-      player_num=0;
-      playerid=0;
-      winner_num=0;
-    }
-  });
-  socket.on('move',(pulled_player_id,moved_card,moved_card_idx)=>{
-    player_list[pulled_player_id].pullcard(moved_card_idx);
-    player_list[pulled_player_id].addcard(moved_card);
-  });
-  socket.on('cursor',(id,x,y)=>{
-    cursor.x=x;
-    cursor.y=y;
-  })
-  socket.on('disconnect',()=>{
-    player_list={};
-    player_num=0;
-    playerid=0;
-    winner_num=0;
-    console.log('disconnected');
-    io.sockets.emit('disconnected');
+      redisClient.del(roomid);
+      Object.values(io.to(roomid).sockets).forEach((socket)=>{
+        if(socket.rooms[roomid]){
+          socket.removeAllListeners('start');
+          socket.removeAllListeners('pull');
+          socket.removeAllListeners('move');
+          socket.removeAllListeners('cursor');
+          socket.removeAllListeners('disconnect');
+        }
+      });
+      socket.removeAllListeners('remove-interval');
+      console.log('disconnected');
+      io.to(roomid).emit('disconnected');
+    });
+    socket.on('remove-interval',()=>{
+      if(timer){
+        clearInterval(timer);
+        console.log('インターバルをクリア');
+      }
+      socket.removeAllListeners('remove-interval');
+    })
   });
 });
-
-setInterval(()=>{
-  io.sockets.emit('location',player_list,cursor);
-},1000/30);
 
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/skyway', express.static(__dirname + '/skyway'));
@@ -222,6 +352,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '/static/index.html'));
 });
 
-server.listen(3000, () => {
-    console.log("Starting server on port 3000!");
+server.listen(process.env.PORT || 3000, () => {
+    console.log("Starting server on port"+port);
 });
