@@ -9,7 +9,15 @@ function wait_sleep() {
           resolve();
           clearInterval(timer);
         }
-      },100);
+      },200);
+  })
+}
+function wait_sleep_second() {
+  return new Promise(resolve => {
+    var timer =setInterval(()=>{
+          resolve();
+          clearInterval(timer);
+      },1000);
   })
 }
 
@@ -30,24 +38,22 @@ function get_roomId(){
   }
 };
 
-(async function main() {
-
-  const localVideo = document.getElementById('js-local-stream');
+async function main() {
+  // const localVideo = document.getElementById('js-local-stream');
   const leaveTrigger = document.getElementById('js-leave-trigger');
   const messages = document.getElementById('js-messages');
   const audioMuteTriger = document.getElementById('audio_mute_trigger');
   const videoMuteTriger = document.getElementById('video_mute_trigger');
 
-  var count_stream=-1
-  const num_person = 3
+  var count_stream=-1;
+  const num_person = 4;
   const person_array=[];
-  for (  var i = 0;  i < num_person;  i++  ) {
-    person_array.push(document.getElementById('person'+i))
+  for (  var i = 1;  i <= num_person;  i++  ) {
+    person_array.push(document.getElementById('person'+i));
    }
   console.log(person_array);
 
   room_id=get_roomId();
-  console.log('roomID is '+room_id);
 
   const getRoomModeByHash = 'sfu';
 
@@ -58,11 +64,17 @@ function get_roomId(){
     })
     .catch(console.error);
 
+  console.log('your id is gotten',yourid);
   // Render local stream
-  localVideo.muted = true;
-  localVideo.srcObject = localStream;
-  localVideo.playsInline = true;
-  await localVideo.play().catch(console.error);
+  // localVideo.muted = true;
+  // localVideo.srcObject = localStream;
+  // localVideo.playsInline = true;
+  // await localVideo.play().catch(console.error);
+  
+  person_array[yourid-1].muted = true;
+  person_array[yourid-1].srcObject = localStream;
+  person_array[yourid-1].playsInline = true;
+  await person_array[yourid-1].play().catch(console.error);
 
   // eslint-disable-next-line require-atomic-updates
   const peer = (window.peer = new Peer({
@@ -76,11 +88,10 @@ function get_roomId(){
   wait_sleep().then(result => {
     console.log("show streams",peer.open);
     if (!peer.open) {
-      console.log("peer is not open")
+      console.log("peer is not open");
       return;
     }
 
-    console.log('your id is gotten',yourid);
     const room = peer.joinRoom(room_id, {
       mode: getRoomModeByHash,
       stream: localStream,
@@ -96,13 +107,14 @@ function get_roomId(){
 
     // Render remote stream for new peer join in the room
     room.on('stream', async stream => {
-      count_stream++
-      console.log(count_stream)
+      count_stream++;
+      if (count_stream%num_person==yourid-1){count_stream++;}
+      count_stream=count_stream%num_person;
+      console.log('count_stream:',count_stream);
       person_array[count_stream].srcObject = stream;
       person_array[count_stream].playsInline = true;
       person_array[count_stream].setAttribute('data-peer-id', stream.peerId);
       await person_array[count_stream].play().catch(console.error);
-
     });
 
     room.on('data', ({ data, src }) => {
@@ -110,30 +122,42 @@ function get_roomId(){
       messages.textContent += `${src}: ${data}\n`;
     });
 
-
     // for closing room members
-    room.on('peerLeave', peerId => {
-      const remoteVideo = person_array.querySelector(
-        `[data-peer-id="${peerId}"]`
-      );
+    room.on('peerLeave', close_room_members);
+
+    function close_room_members(peerId){
+      const remoteVideo = person_array.filter(function(value, index, array ) {
+        if (value.getAttribute('data-peer-id')==peerId && index!=yourid-1){
+          return value;
+        }
+      })[0];
       remoteVideo.srcObject.getTracks().forEach(track => track.stop());
       remoteVideo.srcObject = null;
-      // remoteVideo.remove();
-
       messages.textContent += `=== ${peerId} left ===\n`;
-    });
+    }
 
 
     // for closing myself
-    room.once('close', () => {
+    room.once('close', close_myself);
+
+    function close_myself(){
       messages.textContent += '== You left ===\n';
-      console.log(person_array);
-      person_array.forEach(remoteVideo => {
-        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-        remoteVideo.srcObject = null;
-        remoteVideo.remove();
+      var person_array_remote=person_array.filter(function(value, index, array ) {
+        if (value.srcObject!=null){
+          return value;
+        }
       });
-    });
+      person_array_remote.forEach(remoteVideo => {
+        remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+        remoteVideo.cc = null;
+      });
+      // console.log(person_array_remote);
+      // Array.from(person_array_remote).forEach(remoteVideo => {
+      //   remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+      //   remoteVideo.srcObject = null;
+      //   remoteVideo.remove();
+      // });
+    }
 
     function audio_toggle(){
       localStream.getAudioTracks().forEach((track) => {
@@ -154,22 +178,34 @@ function get_roomId(){
       localStream.getVideoTracks().forEach((track) => {
         if (track.enabled){
           track.enabled = false;
-          console.log('video off')
+          console.log('video off');
           videoMuteTriger.textContent="ビデオの開始"
         }
         else{
           track.enabled = true;
-          console.log('video on')
+          console.log('video on');
           videoMuteTriger.textContent="ビデオの停止"
         }
       });
     }
 
+    socket.on('disconnected',()=>{
+      console.log('socket disconnection is detected in skyway.js');
+      socket.removeAllListeners('disconnected');
+      room.close();
+      close_myself();
+      main();
+      // wait_and_reset(5,1);
+      // wait_sleep_second().then(result => {
+        // main();
+      // });
+  });
+
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
-
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
   });
 
   peer.on('error', console.error);
-})();
+};
+main();
