@@ -194,11 +194,14 @@ async function main() {
       socket.removeAllListeners('disconnected');
       room.close();
       close_myself();
-      main();
-      // wait_and_reset(5,1);
-      // wait_sleep_second().then(result => {
-        // main();
-      // });
+      yourid=-9999;
+  });
+    socket.on('leaved-after-finish',()=>{
+      console.log('leaved-after-finish is detected in skyway.js');
+      socket.removeAllListeners('leaved-after-finish');
+      room.close();
+      close_myself();
+      yourid=-9999;
   });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
@@ -208,4 +211,4 @@ async function main() {
 
   peer.on('error', console.error);
 };
-main();
+// main();

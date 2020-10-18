@@ -231,6 +231,7 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
+    main();
 });
 socket.on('reject',()=>{
     StartMsg.innerHTML='There are few people!';
@@ -321,7 +322,7 @@ socket.on('finish',()=>{
 
 socket.on('location', (players,cursor) => {
     player_list=players;
-    console.log(players);
+    // console.log(players);
     Object.values(players).forEach((player,idx)=>{
         if(player.status=='pulled' || player.status=='pull'){
             const canvas=document.getElementById('canvas'+String(player.id));
