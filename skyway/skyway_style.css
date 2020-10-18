@@ -21,9 +21,12 @@
 }
 
 .streams{
-  position: absolute;
+  /*position: absolute;*/
+  float:left;
+
+  /*
   bottom: 10%;
-  display: inline-block;
+  display: inline-block;*/
   background-color: #f6fbff;
   height: 60%;
   width: 50%;
@@ -38,6 +41,9 @@
 }
 
 .box{
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   color:white;
   width: 50%;

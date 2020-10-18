@@ -1,9 +1,40 @@
 'use strict';
+
 const socket = io();
 const canvas1 = document.getElementById('canvas1');
 const canvas2 = document.getElementById('canvas2');
 const canvas3 = document.getElementById('canvas3');
 const canvas4 = document.getElementById('canvas4');
+
+canvas1.style.height = canvas1.getBoundingClientRect().width*2/3
+canvas2.style.height = canvas2.getBoundingClientRect().width*2/3
+canvas3.style.height = canvas3.getBoundingClientRect().width*2/3
+canvas4.style.height = canvas4.getBoundingClientRect().width*2/3
+canvas1.width = canvas1.getBoundingClientRect().width
+canvas2.width = canvas1.getBoundingClientRect().width
+canvas3.width = canvas1.getBoundingClientRect().width
+canvas4.width = canvas1.getBoundingClientRect().width
+canvas1.height = canvas1.getBoundingClientRect().width*2/3
+canvas2.height = canvas2.getBoundingClientRect().width*2/3
+canvas3.height = canvas3.getBoundingClientRect().width*2/3
+canvas4.height = canvas4.getBoundingClientRect().width*2/3
+var canvas_scale=canvas1.getBoundingClientRect().width/450
+
+window.addEventListener("resize",()=>{
+    canvas1.style.height = canvas1.getBoundingClientRect().width*2/3
+    canvas2.style.height = canvas2.getBoundingClientRect().width*2/3
+    canvas3.style.height = canvas3.getBoundingClientRect().width*2/3
+    canvas4.style.height = canvas4.getBoundingClientRect().width*2/3
+    canvas1.width = canvas1.getBoundingClientRect().width
+    canvas2.width = canvas1.getBoundingClientRect().width
+    canvas3.width = canvas1.getBoundingClientRect().width
+    canvas4.width = canvas1.getBoundingClientRect().width
+    canvas1.height = canvas1.getBoundingClientRect().width*2/3
+    canvas2.height = canvas2.getBoundingClientRect().width*2/3
+    canvas3.height = canvas3.getBoundingClientRect().width*2/3
+    canvas4.height = canvas4.getBoundingClientRect().width*2/3
+    canvas_scale = canvas1.getBoundingClientRect().width/450
+});
 const playerImage = document.getElementById('player-image');
 const ImageLoader=document.getElementById('image-wrapper');
 var player_list={};
@@ -51,10 +82,10 @@ function get_query(){
 }
 
 
-function player_join(){
-    socket.emit('join',roomid);
+function player_join(rejoin_id=0){  //if rejoin_id==0, it's first time to join
+    socket.emit('join',roomid,rejoin_id);
 }
-function player_leave(){
+function player_leave(){  
     socket.emit('leave');
 }
 
@@ -92,14 +123,14 @@ function draw_card(canvas_id,context,card){
     if(CanvasNametoId[canvas_id]==yourid){
         if(card.mark=='joker'){
             const CardImage=document.getElementById('joker');
-            context.drawImage(CardImage,card.position.x,card.position.y,TrumpWidth,TrumpHeight);
+            context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
         }else{
             const CardImage=document.getElementById(card.mark+'-'+String(card.number));
-            context.drawImage(CardImage,card.position.x,card.position.y,TrumpWidth,TrumpHeight);
+            context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
         }
     }else{
         const CardImage=document.getElementById('back');
-        context.drawImage(CardImage,card.position.x,card.position.y,TrumpWidth,TrumpHeight);
+        context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
     }
 }
 
@@ -107,8 +138,8 @@ function choose_card(event){
     console.log('スタートフラッグが0?');
     if(startflag==0){return;}
     var canvasrect = this.canvas.getBoundingClientRect();
-    const x=event.clientX-canvasrect.left;
-    const y=event.clientY-canvasrect.top;
+    const x=(event.clientX-canvasrect.left)/canvas_scale;
+    const y=(event.clientY-canvasrect.top)/canvas_scale;
     var pull_player=player_list[yourid];
     var pulled_player=player_list[CanvasNametoId[this.canvas.id]];
     console.log('x'+x);
@@ -126,6 +157,7 @@ function choose_card(event){
         });
         if(pulled_card==null){return;}
         socket.emit('pull',yourid,pulled_card,pulled_card_idx);
+        console.log('pullしました');
     }
 }
 
@@ -133,8 +165,8 @@ function move_card(event){
     if(startflag==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
-    var x=event.clientX-canvasrect.left;
-    var y=event.clientY-canvasrect.top;
+    var x=(event.clientX-canvasrect.left)/canvas_scale;
+    var y=(event.clientY-canvasrect.top)/canvas_scale;
     var moved_player=player_list[CanvasNametoId[canvas.id]];
     var moved_card=null;
     var moved_card_idx=null;
@@ -152,16 +184,16 @@ function move_card(event){
         canvas.addEventListener("mouseleave", mup, false);
     }
     function mmove(event){
-        const mx=event.clientX-canvasrect.left;
-        const my=event.clientY-canvasrect.top;
+        const mx=(event.clientX-canvasrect.left)/canvas_scale;
+        const my=(event.clientY-canvasrect.top)/canvas_scale;
         let xoffset=mx-x;
         let yoffset=my-y;
         moved_card.position.x += xoffset;
         moved_card.position.y += yoffset ;
         if(moved_card.position.x<0){moved_card.position.x=0;}
         else if(moved_card.position.y<0){moved_card.position.y=0;}
-        else if(moved_card.position.x>canvas.width-TrumpWidth){moved_card.position.x=canvas.width-TrumpWidth;}
-        else if(moved_card.position.y>canvas.height-TrumpHeight){moved_card.position.y=canvas.height-TrumpHeight;}
+        else if(moved_card.position.x>450-TrumpWidth){moved_card.position.x=450-TrumpWidth;}
+        else if(moved_card.position.y>300-TrumpHeight){moved_card.position.y=300-TrumpHeight;}
         x=mx;
         y=my;
         socket.emit('move',yourid,moved_card,moved_card_idx);
@@ -283,8 +315,6 @@ socket.on('distributed',(players)=>{
 socket.on('finish',()=>{
     StartMsg.innerHTML='Finish!!';
     player_list={};
-    player_leave();
-    player_join();
     socket.emit('remove-interval');
     wait_and_reset(5,1);
 });
@@ -313,7 +343,7 @@ socket.on('location', (players,cursor) => {
             });
             if(player.status=='pulled' && cursor.x!=null && cursor!=null){
                 const CursorImage=document.getElementById('cursor');
-                context.drawImage(CursorImage,cursor.x-10,cursor.y,77,105);
+                context.drawImage(CursorImage,cursor.x-10*canvas_scale,cursor.y,77*canvas_scale,105*canvas_scale);
             }
             if(player.status=='pull'){
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
@@ -337,8 +367,13 @@ socket.on('location', (players,cursor) => {
 socket.on('disconnected',()=>{
     StartMsg.innerHTML='Someone disconnected';
     player_list={};
-    player_leave();
-    player_join();
     socket.emit('remove-interval');
     wait_and_reset(5,1);
 });
+
+socket.on('leaved-after-finish',()=>{
+    player_join(yourid);
+})
+socket.on('leaved-after-disconnect',()=>{
+    player_join();
+})
