@@ -27,8 +27,9 @@
   /*
   bottom: 10%;
   display: inline-block;*/
-  background-color: #f6fbff;
-  height: 60%;
+
+  /* background-color: #f6fbff; */
+  height: auto;
   width: 50%;
 }
 
@@ -48,7 +49,7 @@
   color:white;
   width: 50%;
   height: 50%;
-  border: 1px solid blue;
+  border: 1px solid white;
   box-sizing: border-box;
 }
 
@@ -74,14 +75,25 @@
 
 #audio_mute_trigger{
   position: absolute;
-  background-color:whitesmoke;
-  top: 50px;
-  left: 10px;
+  bottom: 4%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+
 }
 
 #video_mute_trigger{
   position: absolute;
-  background-color:whitesmoke;
-  top: 50px;
-  left: 100px;
+  bottom: 0%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+}
+
+.mute_button{
+  background: #daa520;
+  background-color: #daa520;
+  border-color: #daa520;
+  /* border: none; */
+  border-radius: 100vh;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
 }

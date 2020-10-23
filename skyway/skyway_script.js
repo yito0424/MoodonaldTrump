@@ -61,6 +61,8 @@ async function main() {
     .getUserMedia({
       audio: true,
       video: true,
+      // video: { width: 640, height: 360 }
+
     })
     .catch(console.error);
 
