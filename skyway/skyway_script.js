@@ -1,5 +1,7 @@
 const Peer = window.Peer;
 var room_id;
+let video_state=true;
+let audio_state=true;
 
 function wait_sleep() {
   return new Promise(resolve => {
@@ -38,8 +40,7 @@ function get_roomId(){
   }
 };
 
-async function main() {
-  // const localVideo = document.getElementById('js-local-stream');
+async function skyway_main() {
   const leaveTrigger = document.getElementById('js-leave-trigger');
   const messages = document.getElementById('js-messages');
   const audioMuteTriger = document.getElementById('audio_mute_trigger');
@@ -51,7 +52,6 @@ async function main() {
   for (  var i = 1;  i <= num_person;  i++  ) {
     person_array.push(document.getElementById('person'+i));
    }
-  console.log(person_array);
 
   room_id=get_roomId();
 
@@ -61,10 +61,22 @@ async function main() {
     .getUserMedia({
       audio: true,
       video: true,
-      // video: { width: 640, height: 360 }
-
     })
     .catch(console.error);
+
+    localStream.getAudioTracks().forEach((track) => {
+      if(!audio_state){
+        track.enabled = false;
+        audioMuteTriger.textContent="ミュート解除"
+      }
+    });
+
+    localStream.getVideoTracks().forEach((track) => {
+      if(!video_state){
+        track.enabled = false;
+        videoMuteTriger.textContent="ビデオの開始"
+      }
+    });
 
   console.log('your id is gotten',yourid);
   // Render local stream
@@ -93,7 +105,7 @@ async function main() {
       console.log("peer is not open");
       return;
     }
-
+    
     const room = peer.joinRoom(room_id, {
       mode: getRoomModeByHash,
       stream: localStream,
@@ -173,6 +185,7 @@ async function main() {
           console.log('audio on')
           audioMuteTriger.textContent="ミュート"
         }
+        audio_state=track.enabled;
       });
     }
 
@@ -188,6 +201,7 @@ async function main() {
           console.log('video on');
           videoMuteTriger.textContent="ビデオの停止"
         }
+        video_state=track.enabled;
       });
     }
 
@@ -213,4 +227,3 @@ async function main() {
 
   peer.on('error', console.error);
 };
-// main();

@@ -231,7 +231,7 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
-    main();
+    skyway_main();
 });
 socket.on('reject',()=>{
     StartMsg.innerHTML='There are few people!';
