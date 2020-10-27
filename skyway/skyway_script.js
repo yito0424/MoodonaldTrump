@@ -41,8 +41,6 @@ function get_roomId(){
 };
 
 async function skyway_main() {
-  const leaveTrigger = document.getElementById('js-leave-trigger');
-  const messages = document.getElementById('js-messages');
   const audioMuteTriger = document.getElementById('audio_mute_trigger');
   const videoMuteTriger = document.getElementById('video_mute_trigger');
 
@@ -79,12 +77,8 @@ async function skyway_main() {
     });
 
   console.log('your id is gotten',yourid);
-  // Render local stream
-  // localVideo.muted = true;
-  // localVideo.srcObject = localStream;
-  // localVideo.playsInline = true;
-  // await localVideo.play().catch(console.error);
   
+  // 自分のビデオを映す
   person_array[yourid-1].muted = true;
   person_array[yourid-1].srcObject = localStream;
   person_array[yourid-1].playsInline = true;
@@ -100,6 +94,7 @@ async function skyway_main() {
   // Note that you need to ensure the peer has connected to signaling server
   // before using methods of peer instance.
   wait_sleep().then(result => {
+
     console.log("show streams",peer.open);
     if (!peer.open) {
       console.log("peer is not open");
@@ -112,10 +107,10 @@ async function skyway_main() {
     });
     
     room.once('open', () => {
-      messages.textContent += '=== You joined ===\n';
+      console.log('=== You joined ===\n');
     });
     room.on('peerJoin', peerId => {
-      messages.textContent += `=== ${peerId} joined ===\n`;
+      console.log(`=== ${peerId} joined ===\n`);
     });
     
 
@@ -131,11 +126,6 @@ async function skyway_main() {
       await person_array[count_stream].play().catch(console.error);
     });
 
-    room.on('data', ({ data, src }) => {
-      // Show a message sent to the room and who sent
-      messages.textContent += `${src}: ${data}\n`;
-    });
-
     // for closing room members
     room.on('peerLeave', close_room_members);
 
@@ -147,7 +137,7 @@ async function skyway_main() {
       })[0];
       remoteVideo.srcObject.getTracks().forEach(track => track.stop());
       remoteVideo.srcObject = null;
-      messages.textContent += `=== ${peerId} left ===\n`;
+      console.log(`=== ${peerId} left ===\n`);
     }
 
 
@@ -155,7 +145,7 @@ async function skyway_main() {
     room.once('close', close_myself);
 
     function close_myself(){
-      messages.textContent += '== You left ===\n';
+      console.log('== You left ===\n');
       var person_array_remote=person_array.filter(function(value, index, array ) {
         if (value.srcObject!=null){
           return value;
@@ -177,12 +167,12 @@ async function skyway_main() {
       localStream.getAudioTracks().forEach((track) => {
         if (track.enabled){
           track.enabled = false;
-          console.log('audio off')
+          console.log('audio off');
           audioMuteTriger.textContent="ミュート解除"
         }
         else{
           track.enabled = true;
-          console.log('audio on')
+          console.log('audio on');
           audioMuteTriger.textContent="ミュート"
         }
         audio_state=track.enabled;
@@ -222,7 +212,6 @@ async function skyway_main() {
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
-    leaveTrigger.addEventListener('click', () => room.close(), { once: true });
   });
 
   peer.on('error', console.error);
