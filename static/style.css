@@ -83,7 +83,7 @@ html{
     z-index: -1;
 }
 
-#win-msg1{
+/* #win-msg1{
     top:200px;
     left:50%;
     transform: translateY(-50%) translateX(-50%);
@@ -102,7 +102,7 @@ html{
     top:50%;
     right:225px;
     transform: translateY(-50%) translateX(+50%);
-}
+} */
 
 .game-canvas{
     /* width:450px;

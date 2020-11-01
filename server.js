@@ -146,7 +146,7 @@ io.on('connection',function(socket){
   let player_list;
   let player
   let timer;
-  const redisClient=redis.createClient();
+  const redisClient=redis.createClient(process.env.REDIS_URL);
 
   socket.on('join',(roomid,rejoin_id)=>{
     socket.join(roomid);
@@ -187,7 +187,8 @@ io.on('connection',function(socket){
           executive_access(socket,redisClient,roomid);
         }
         else{
-          io.to(roomid).emit('over-notice');
+          socket.leave(roomid);
+          socket.emit('over-notice');
           return;
         }
       });
