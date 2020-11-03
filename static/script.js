@@ -45,8 +45,8 @@ const mark={
 for(var i=1;i<=4;i++){
     const canvas=document.getElementById(CanvasIdtoName[i]);
     const player=document.getElementById(PlayerIdtoName[i]);
-    console.log("canvas"+canvas.clientWidth);
-    console.log("person"+player.clientHeight);
+    // console.log("canvas"+canvas.clientWidth);
+    // console.log("person"+player.clientHeight);
     if(canvas.clientWidth*2/3<player.clientHeight*0.85){
         canvas.style.height=player.clientWidth*2/3
     }else{
@@ -65,8 +65,8 @@ window.addEventListener("resize",()=>{
     for(var i=1;i<=4;i++){
         const canvas=document.getElementById(CanvasIdtoName[i]);
         const player=document.getElementById(PlayerIdtoName[i]);
-        console.log("canvas"+canvas.clientWidth);
-        console.log("person"+player.clientHeight);
+        // console.log("canvas"+canvas.clientWidth);
+        // console.log("person"+player.clientHeight);
         if(canvas.clientWidth*2/3<player.clientHeight*0.85){
             canvas.style.height=player.clientWidth*2/3
         }else{
@@ -244,7 +244,7 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
-    skyway_main();
+    skyway_main().then(HandDetection);
 });
 socket.on('reject',()=>{
     StartMsg.innerHTML='There are few people!';
@@ -343,13 +343,14 @@ socket.on('location', (players,cursor) => {
             var cardlist;
             context.clearRect(0, 0, canvas.width, canvas.height);
             if(player.id==yourid){
-                context.fillStyle = "#990000";
+                context.strokeStyle = "#990000";
                 cardlist=player.cardlist;
             }else{
-                context.fillStyle = "#004840";
+                context.strokeStyle = "#004840";
                 cardlist=getReverseCardList(player.cardlist);
             }
-            //context.fillRect(0,0,canvas.width,canvas.height);
+            context.lineWidth=10;
+            context.strokeRect(0,0,canvas.width,canvas.height);
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
