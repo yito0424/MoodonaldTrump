@@ -217,7 +217,8 @@ io.on('connection',function(socket){
         for(var i=1;i<=player_num;i++){
           if(i==1){ player_list[i].status='pulled';}
           else if(i==2){ player_list[i].status='pull';}
-          else{ player_list[i].status='normal';}
+          else if(i==3){ player_list[i].status='normal1';}//変更
+          else{ player_list[i].status='normal2';}
         }
         io.to(roomid).emit('started',player_num);
         socket.on('push',()=>{
@@ -282,8 +283,11 @@ io.on('connection',function(socket){
               }else if(count==1){
                 player_list[(pulled_player_id+i)%player_num+1].status='pull';
                 count++;
+              }else if(count==2){//変更
+                player_list[(pulled_player_id+i)%player_num+1].status='normal1';
+                count++;
               }else{
-                player_list[(pulled_player_id+i)%player_num+1].status='normal';
+                player_list[(pulled_player_id+i)%player_num+1].status='normal2';
               }
             }
           }
