@@ -6,35 +6,6 @@ const canvas2 = document.getElementById('canvas2');
 const canvas3 = document.getElementById('canvas3');
 const canvas4 = document.getElementById('canvas4');
 
-canvas1.style.height = canvas1.getBoundingClientRect().width*2/3
-canvas2.style.height = canvas2.getBoundingClientRect().width*2/3
-canvas3.style.height = canvas3.getBoundingClientRect().width*2/3
-canvas4.style.height = canvas4.getBoundingClientRect().width*2/3
-canvas1.width = canvas1.getBoundingClientRect().width
-canvas2.width = canvas1.getBoundingClientRect().width
-canvas3.width = canvas1.getBoundingClientRect().width
-canvas4.width = canvas1.getBoundingClientRect().width
-canvas1.height = canvas1.getBoundingClientRect().width*2/3
-canvas2.height = canvas2.getBoundingClientRect().width*2/3
-canvas3.height = canvas3.getBoundingClientRect().width*2/3
-canvas4.height = canvas4.getBoundingClientRect().width*2/3
-var canvas_scale=canvas1.getBoundingClientRect().width/450
-
-window.addEventListener("resize",()=>{
-    canvas1.style.height = canvas1.getBoundingClientRect().width*2/3
-    canvas2.style.height = canvas2.getBoundingClientRect().width*2/3
-    canvas3.style.height = canvas3.getBoundingClientRect().width*2/3
-    canvas4.style.height = canvas4.getBoundingClientRect().width*2/3
-    canvas1.width = canvas1.getBoundingClientRect().width
-    canvas2.width = canvas1.getBoundingClientRect().width
-    canvas3.width = canvas1.getBoundingClientRect().width
-    canvas4.width = canvas1.getBoundingClientRect().width
-    canvas1.height = canvas1.getBoundingClientRect().width*2/3
-    canvas2.height = canvas2.getBoundingClientRect().width*2/3
-    canvas3.height = canvas3.getBoundingClientRect().width*2/3
-    canvas4.height = canvas4.getBoundingClientRect().width*2/3
-    canvas_scale = canvas1.getBoundingClientRect().width/450
-});
 const playerImage = document.getElementById('player-image');
 const ImageLoader=document.getElementById('image-wrapper');
 var player_list={};
@@ -51,6 +22,12 @@ const CanvasIdtoName={
     3:'canvas3',
     4:'canvas4'
 };
+const PlayerIdtoName={
+    1:'player1',
+    2:'player2',
+    3:'player3',
+    4:'player4'
+}
 const CanvasNametoId={
     'canvas1':1,
     'canvas2':2,
@@ -64,6 +41,42 @@ const mark={
     4:'club',
     5:'joker'
   };
+
+for(var i=1;i<=4;i++){
+    const canvas=document.getElementById(CanvasIdtoName[i]);
+    const player=document.getElementById(PlayerIdtoName[i]);
+    // console.log("canvas"+canvas.clientWidth);
+    // console.log("person"+player.clientHeight);
+    if(canvas.clientWidth*2/3<player.clientHeight*0.85){
+        canvas.style.height=player.clientWidth*2/3
+    }else{
+        canvas.style.width=player.clientHeight*0.85*3/2;
+    }
+    canvas.width = canvas.getBoundingClientRect().width
+    canvas.height = canvas.getBoundingClientRect().width*2/3
+}
+var canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
+
+window.addEventListener("resize",()=>{
+    // var p1=document.getElementById("person1");
+    // var divtag=document.getElementById("player1");
+    // console.log("width"+100*p1.clientWidth/divtag.clientWidth);
+    // console.log("height"+100*p1.clientHeight/divtag.clientHeight);
+    for(var i=1;i<=4;i++){
+        const canvas=document.getElementById(CanvasIdtoName[i]);
+        const player=document.getElementById(PlayerIdtoName[i]);
+        // console.log("canvas"+canvas.clientWidth);
+        // console.log("person"+player.clientHeight);
+        if(canvas.clientWidth*2/3<player.clientHeight*0.85){
+            canvas.style.height=player.clientWidth*2/3
+        }else{
+            canvas.style.width=player.clientHeight*0.85*3/2;
+        }
+        canvas.width = canvas.getBoundingClientRect().width
+        canvas.height = canvas.getBoundingClientRect().width*2/3
+    }
+    canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
+});
 
 function get_query(){
     var result = {};
@@ -231,7 +244,7 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
-    skyway_main();
+    skyway_main().then(HandDetection);
 });
 socket.on('reject',()=>{
     StartMsg.innerHTML='There are few people!';
@@ -304,7 +317,7 @@ socket.on('distributed',(players)=>{
                 context.fillStyle = "#004840";
                 cardlist=getReverseCardList(player.cardlist);
             }
-            context.fillRect(0,0,canvas.width,canvas.height);
+            //context.fillRect(0,0,canvas.width,canvas.height);
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
@@ -330,13 +343,14 @@ socket.on('location', (players,cursor) => {
             var cardlist;
             context.clearRect(0, 0, canvas.width, canvas.height);
             if(player.id==yourid){
-                context.fillStyle = "#990000";
+                context.strokeStyle = "#990000";
                 cardlist=player.cardlist;
             }else{
-                context.fillStyle = "#004840";
+                context.strokeStyle = "#004840";
                 cardlist=getReverseCardList(player.cardlist);
             }
-            context.fillRect(0,0,canvas.width,canvas.height);
+            context.lineWidth=10;
+            context.strokeRect(0,0,canvas.width,canvas.height);
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
