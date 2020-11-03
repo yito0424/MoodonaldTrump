@@ -21,16 +21,17 @@
 }
 
 .streams{
-  /*position: absolute;*/
-  float:left;
-
+  position: absolute;
+  /* float:left; */
+  top:15%;
   /*
   bottom: 10%;
   display: inline-block;*/
-
+  margin: 0 auto;
   /* background-color: #f6fbff; */
   height: auto;
-  width: 50%;
+  width: 100%;
+  max-height:85%;
 }
 
 .box-wrap{

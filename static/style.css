@@ -6,7 +6,7 @@ html{
     position: absolute;
     top: 10px;
     left: 10px;
-    height:50px;
+    height:15%;
     font-size:30px;
     font-family: 'Lobster', cursive;
     margin:0;
@@ -79,7 +79,7 @@ html{
     left: 50%;
     color:#daa520;
     margin:0;
-    height:50px;
+    height:15%;
     z-index: -1;
 }
 
@@ -107,10 +107,21 @@ html{
 .game-canvas{
     /* width:450px;
     height:300px; */
-    vertical-align: middle;
+    /* vertical-align: middle;
     width:50%;
     object-fit: fill;
-    background-color: 'yellow';
-    float: left;
-
+    background-color: 'yellow'; */
+    /* float: left; */
+    position: absolute;
+    top:15%;
+    /*
+    bottom: 10%;
+    display: inline-block;*/
+    margin: 0 auto;
+    height:85%;
+    width:100%;
+    /* background-color: #f6fbff; */
+    max-height:85%;
+    max-width: 100%;
+    z-index:1;
 }
