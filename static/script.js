@@ -170,11 +170,11 @@ function move_card(event){
     var moved_player=player_list[CanvasNametoId[canvas.id]];
     var moved_card=null;
     var moved_card_idx=null;
-    if(moved_player.status=='pulled' && player_list[yourid].status=='pulled'){
-        moved_player.cardlist.forEach((card,idx)=>{
-            if(card.position.x<=x && x<=card.position.x+TrumpWidth && card.position.y<=y && y<=card.position.y+TrumpHeight){
-                moved_card=card;
-                moved_card_idx=idx;
+    if(moved_player.status=='pulled' && player_list[yourid].status=='pulled' || moved_player.status=='normal1' && player_list[yourid].status=='normal1'|| moved_player.status=='normal2' && player_list[yourid].status=='normal2'|| moved_player.status=='pull' && player_list[yourid].status=='pull'){//変更
+    moved_player.cardlist.forEach((card,idx)=>{
+        if(card.position.x<=x && x<=card.position.x+TrumpWidth && card.position.y<=y && y<=card.position.y+TrumpHeight){
+            moved_card=card;
+            moved_card_idx=idx;
             }
         });
     }
@@ -324,7 +324,7 @@ socket.on('location', (players,cursor) => {
     player_list=players;
     //console.log(players);
     Object.values(players).forEach((player,idx)=>{
-        if(player.status=='pulled' || player.status=='pull'){
+        if(player.status=='pulled' || player.status=='pull'||player.status=='normal1'|| player.status=='normal2'){//変更
             const canvas=document.getElementById('canvas'+String(player.id));
             const context=canvas.getContext('2d');
             var cardlist;
