@@ -124,5 +124,5 @@ html{
     max-height:85%;
     max-width: 100%;
     z-index:1;
-    transform:scaleX(-1);
+    /* transform:scaleX(-1); */
 }
