@@ -101,7 +101,7 @@ async function skyway_main() {
           canvas.width=vw;
           canvas.height=vw/1.5;
       }
-      canvas_scale_list[i]=vw/450;
+      canvas_scale_list[yourid]=vw/450;
   }
 
   // eslint-disable-next-line require-atomic-updates
@@ -165,7 +165,7 @@ async function skyway_main() {
               canvas.width=vw;
               canvas.height=vw/1.5;
           }
-          canvas_scale_list[i]=vw/450;
+          canvas_scale_list[count_stream+1]=vw/450;
     }
     });
 

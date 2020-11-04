@@ -5,6 +5,7 @@ var hand_not_exist_times=0;
 var card_hold_flag=0;
 var moved_card=null;
 var moved_card_idx=null;
+var myCanvas;
 
 async function HandDetection(){
     video=document.getElementById(PlayerIdtoVideo[yourid]);
@@ -13,22 +14,27 @@ async function HandDetection(){
     console.log("loaded");
     setInterval(()=>{
         detect(net);
-    },500);
+    },100);
 }
 
 async function detect(net){
     const hand =await net.estimateHands(video);
     // console.log(hand);
     if(hand.length>0){
+        console.log("検出あり");
         OpenCloseJudger(hand);
     }else{
         hand_not_exist_times+=1;
+        console.log("検出なし");
         if(hand_not_exist_times>=4){
             //カードをリリース
-            card_hold_flag=0;
-            hand_not_exist_times=0;
-            moved_card=null;
-            moved_card_idx=null;
+            if(moved_card!=null){
+                console.log("カードを自動リリース");
+                hand_not_exist_times=0;
+                moved_card=null;
+                moved_card_idx=null;
+                card_hold_flag=0;
+            }
         }
     }
 }
@@ -56,8 +62,8 @@ function OpenCloseJudger(predictions){
         // ctx.arc(center.x,center.y,5,0,3*Math.PI);
         // ctx.fillStyle="indigo";
         // ctx.fill();
-        console.log("center");
-        console.log(center);
+        // console.log("center");
+        // console.log(center);
         const fingers=[thumb,index,middle,ring,pinky];
         var sum_angle_list=[];
         // var aspect=(bbbr[1]-bbtl[1])/(bbbr[0]-bbtl[0]);
@@ -86,55 +92,95 @@ function OpenCloseJudger(predictions){
             // console.log(i+":"+sum_angle);
             if(sum_angle>=320){open_finger_num++;}
         })
+        console.log("ここまで実行");
         if(open_finger_num>=3){
             //if hand is opened
             if(card_hold_flag==1){
                 //カードをリリース
+                console.log("カードをリリース");
+                moved_card=null;
+                moved_card_idx=null;
+                hand_not_exist_times=0;
                 card_hold_flag=0;
             }
         }else{
             //if hand is closed
             if(card_hold_flag==0){
                 //カードをつかむ
-                move_card_grip(center);
-                card_hold_flag=1;
+                console.log("カードをつかむ");
+                grip_card(center);
+            }else{
+                console.log("カードを動かす");
+                move_card_byhand(center);
             }
         };
         
     })
 }
 
-function move_card_grip(center){
+function grip_card(center){
     if(startflag==0){return;}
-    if(moved_card==null){
-        //x座標の反転をなおす
-        var x=(video.videoWidth-center.x)/canvas_scale;
-        var y=center.y/canvas_scale;
-        console.log("y:"+y);
-        var moved_player=player_list[yourid];
-        if(moved_player.status=='pulled' && player_list[yourid].status=='pulled' || moved_player.status=='normal1' && player_list[yourid].status=='normal1'|| moved_player.status=='normal2' && player_list[yourid].status=='normal2'|| moved_player.status=='pull' && player_list[yourid].status=='pull'){//変更
-        moved_player.cardlist.forEach((card,idx)=>{
-            console.log(card.position.y);
-            if(card.position.x<=x && x<=card.position.x+TrumpWidth && card.position.y<=y && y<=card.position.y+TrumpHeight){
-                console.log("つかまえた");
-                moved_card=card;
-                moved_card_idx=idx;
-                }
-            });
-        }
+    var x,y;
+    var clientVideoSize=getClientVideoSize(video);
+    var canvasRect=myCanvas.getBoundingClientRect();
+
+    //キャンバスとビデオの幅が同じかどうか
+    if(canvasRect.width>clientVideoSize.width-1 && canvasRect.width<clientVideoSize.width+1){
+        x=((video.videoWidth-center.x)*clientVideoSize.width/video.videoWidth)/canvas_scale_list[yourid];
+        y=(center.y*clientVideoSize.height/video.videoHeight)/canvas_scale_list[yourid];
     }else{
-        console.log("つかんで動かす");
-        let xoffset=(center.x-moved_card.position.x)/canvas_scale;
-        let yoffset=(center.y-moved_card.position.y)/canvas_scale;
-        moved_card.position.x += xoffset;
-        moved_card.position.y += yoffset ;
-        if(moved_card.position.x<0){moved_card.position.x=0;}
-        else if(moved_card.position.y<0){moved_card.position.y=0;}
-        else if(moved_card.position.x>450-TrumpWidth){moved_card.position.x=450-TrumpWidth;}
-        else if(moved_card.position.y>300-TrumpHeight){moved_card.position.y=300-TrumpHeight;}
-        socket.emit('move',yourid,moved_card,moved_card_idx);
-        moved_card_idx=player_list[yourid].cardlist.length-1;
+        x=((video.videoWidth-center.x)*clientVideoSize.width/video.videoWidth+(clientVideoSize.width-canvasRect.width)/2)/canvas_scale_list[yourid];
+        y=(center.y*clientVideoSize.height/video.videoHeight)/canvas_scale_list[yourid];
     }
+
+    // var cc=document.getElementById("canvas1");
+    // var ctx=cc.getContext("2d");
+    // ctx.beginPath();
+    // ctx.arc(x,y,5,0,3*Math.PI);
+    // ctx.fillStyle="indigo";
+    // ctx.fill();
+
+    var moved_player=player_list[yourid];
+    if(moved_player.status=='pulled' && player_list[yourid].status=='pulled' || moved_player.status=='normal1' && player_list[yourid].status=='normal1'|| moved_player.status=='normal2' && player_list[yourid].status=='normal2'|| moved_player.status=='pull' && player_list[yourid].status=='pull'){//変更
+    moved_player.cardlist.forEach((card,idx)=>{
+        // console.log(card.position.y);
+        if(card.position.x<=x && x<=card.position.x+TrumpWidth && card.position.y<=y && y<=card.position.y+TrumpHeight){
+            moved_card=card;
+            moved_card_idx=idx;
+            }
+        });
+    }
+    if(moved_card!=null){
+        console.log("つかんだ");
+        card_hold_flag=1;
+    }
+}
+
+function move_card_byhand(center){
+    if(startflag==0){return;}
+    var x,y;
+    var clientVideoSize=getClientVideoSize(video);
+    var canvasRect=myCanvas.getBoundingClientRect();
+
+    //キャンバスとビデオの幅が同じかどうか
+    if(canvasRect.width>clientVideoSize.width-1 && canvasRect.width<clientVideoSize.width+1){
+        x=((video.videoWidth-center.x)*clientVideoSize.width/video.videoWidth)/canvas_scale_list[yourid];
+        y=(center.y*clientVideoSize.height/video.videoHeight)/canvas_scale_list[yourid];
+    }else{
+        x=((video.videoWidth-center.x)*clientVideoSize.width/video.videoWidth+(clientVideoSize.width-canvasRect.width)/2)/canvas_scale_list[yourid];
+        y=(center.y*clientVideoSize.height/video.videoHeight)/canvas_scale_list[yourid];
+    }
+    let xoffset=(x-moved_card.position.x);
+    let yoffset=(y-moved_card.position.y);
+    console.log("xof:"+xoffset);
+    moved_card.position.x += xoffset;
+    moved_card.position.y += yoffset ;
+    if(moved_card.position.x<0){moved_card.position.x=0;}
+    else if(moved_card.position.y<0){moved_card.position.y=0;}
+    else if(moved_card.position.x>450-TrumpWidth){moved_card.position.x=450-TrumpWidth;}
+    else if(moved_card.position.y>300-TrumpHeight){moved_card.position.y=300-TrumpHeight;}
+    socket.emit('move',yourid,moved_card,moved_card_idx);
+    moved_card_idx=player_list[yourid].cardlist.length-1;
 }
 
 function setClientVideoSize(v) {
