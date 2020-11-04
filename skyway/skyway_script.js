@@ -84,6 +84,26 @@ async function skyway_main() {
   person_array[yourid-1].playsInline = true;
   await person_array[yourid-1].play().catch(console.error);
 
+  //ビデオサイズに合わせてキャンバスサイズを調整
+  const canvas=document.getElementById(CanvasIdtoName[yourid]);
+  const video=person_array[yourid-1];
+  if(!video.paused){
+      const vh=getClientVideoSize(video).height;
+      const vw=getClientVideoSize(video).width;
+      if(vh*1.5<vw){
+          canvas.style.height=vh;
+          canvas.style.width=vh*1.5;
+          canvas.height = vh;
+          canvas.width = vh*1.5;
+      }else{
+          canvas.style.width=vw;
+          canvas.style.height=vw/1.5;
+          canvas.width=vw;
+          canvas.height=vw/1.5;
+      }
+      canvas_scale_list[yourid]=vw/450;
+  }
+
   // eslint-disable-next-line require-atomic-updates
   const peer = (window.peer = new Peer({
     key: window.__SKYWAY_KEY__,
@@ -124,6 +144,29 @@ async function skyway_main() {
       person_array[count_stream].playsInline = true;
       person_array[count_stream].setAttribute('data-peer-id', stream.peerId);
       await person_array[count_stream].play().catch(console.error);
+      //ビデオサイズに合わせてキャンバスサイズを調整
+      const canvas=document.getElementById(CanvasIdtoName[count_stream+1]);
+      const video=person_array[count_stream];
+      // console.log("canvas"+canvas.clientWidth);
+      // console.log("person"+player.clientHeight);
+      if(!video.paused){
+          // console.log(getClientVideoSize(video).height);
+          // console.log(getClientVideoSize(video).width);
+          const vh=getClientVideoSize(video).height;
+          const vw=getClientVideoSize(video).width;
+          if(vh*1.5<vw){
+              canvas.style.height=vh;
+              canvas.style.width=vh*1.5;
+              canvas.height = vh;
+              canvas.width = vh*1.5;
+          }else{
+              canvas.style.width=vw;
+              canvas.style.height=vw/1.5;
+              canvas.width=vw;
+              canvas.height=vw/1.5;
+          }
+          canvas_scale_list[count_stream+1]=vw/450;
+    }
     });
 
     // for closing room members

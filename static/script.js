@@ -5,6 +5,7 @@ const canvas1 = document.getElementById('canvas1');
 const canvas2 = document.getElementById('canvas2');
 const canvas3 = document.getElementById('canvas3');
 const canvas4 = document.getElementById('canvas4');
+var canvas_scale_list={};
 
 const playerImage = document.getElementById('player-image');
 const ImageLoader=document.getElementById('image-wrapper');
@@ -42,18 +43,25 @@ const mark={
     5:'joker'
   };
 
+  const PlayerIdtoVideo={
+    1:'person1',
+    2:'person2',
+    3:'person3',
+    4:'person4'
+}
+
 for(var i=1;i<=4;i++){
     const canvas=document.getElementById(CanvasIdtoName[i]);
-    const player=document.getElementById(PlayerIdtoName[i]);
+    const video=document.getElementById(PlayerIdtoVideo[i]);
     // console.log("canvas"+canvas.clientWidth);
     // console.log("person"+player.clientHeight);
-    if(canvas.clientWidth*2/3<player.clientHeight*0.85){
-        canvas.style.height=player.clientWidth*2/3
-    }else{
-        canvas.style.width=player.clientHeight*0.85*3/2;
-    }
-    canvas.width = canvas.getBoundingClientRect().width
-    canvas.height = canvas.getBoundingClientRect().width*2/3
+    // if(canvas.clientWidth*2/3<player.clientHeight*0.85){
+    //     canvas.style.height=player.clientWidth*2/3
+    // }else{
+    //     canvas.style.width=player.clientHeight*0.85*3/2;
+    // }
+    // canvas.width = canvas.getBoundingClientRect().width
+    // canvas.height = canvas.getBoundingClientRect().width*2/3
 }
 var canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
 
@@ -64,18 +72,37 @@ window.addEventListener("resize",()=>{
     // console.log("height"+100*p1.clientHeight/divtag.clientHeight);
     for(var i=1;i<=4;i++){
         const canvas=document.getElementById(CanvasIdtoName[i]);
-        const player=document.getElementById(PlayerIdtoName[i]);
+        const video=document.getElementById(PlayerIdtoVideo[i]);
         // console.log("canvas"+canvas.clientWidth);
         // console.log("person"+player.clientHeight);
-        if(canvas.clientWidth*2/3<player.clientHeight*0.85){
-            canvas.style.height=player.clientWidth*2/3
-        }else{
-            canvas.style.width=player.clientHeight*0.85*3/2;
+        if(!video.paused){
+            // console.log(getClientVideoSize(video).height);
+            // console.log(getClientVideoSize(video).width);
+            const vh=getClientVideoSize(video).height;
+            const vw=getClientVideoSize(video).width;
+            if(vh*1.5<vw){
+                canvas.style.height=vh;
+                canvas.style.width=vh*1.5;
+                canvas.height = vh;
+                canvas.width = vh*1.5;
+            }else{
+                canvas.style.width=vw;
+                canvas.style.height=vw/1.5;
+                canvas.width=vw;
+                canvas.height=vw/1.5;
+            }
+            canvas_scale_list[i]=vw/450;
+
         }
-        canvas.width = canvas.getBoundingClientRect().width
-        canvas.height = canvas.getBoundingClientRect().width*2/3
+        // if(canvas.clientWidth*2/3<player.clientHeight*0.85){
+        //     canvas.style.height=player.clientWidth*2/3
+        // }else{
+        //     canvas.style.width=player.clientHeight*0.85*3/2;
+        // }
+        // canvas.width = canvas.getBoundingClientRect().width
+        // canvas.height = canvas.getBoundingClientRect().width*2/3
     }
-    canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
+    // canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
 });
 
 function get_query(){
@@ -132,18 +159,19 @@ function load_img(){
     console.log('all image loaded');
 }
 
-function draw_card(canvas_id,context,card){
-    if(CanvasNametoId[canvas_id]==yourid){
+function draw_card(canvas_name,context,card){
+    var canvas_id=CanvasNametoId[canvas_name];
+    if(canvas_id==yourid){
         if(card.mark=='joker'){
             const CardImage=document.getElementById('joker');
-            context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
+            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
         }else{
             const CardImage=document.getElementById(card.mark+'-'+String(card.number));
-            context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
+            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
         }
     }else{
         const CardImage=document.getElementById('back');
-        context.drawImage(CardImage,card.position.x*canvas_scale,card.position.y*canvas_scale,TrumpWidth*canvas_scale,TrumpHeight*canvas_scale);
+        context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
     }
 }
 
@@ -151,8 +179,8 @@ function choose_card(event){
     console.log('スタートフラッグが0?');
     if(startflag==0){return;}
     var canvasrect = this.canvas.getBoundingClientRect();
-    const x=(event.clientX-canvasrect.left)/canvas_scale;
-    const y=(event.clientY-canvasrect.top)/canvas_scale;
+    const x=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
+    const y=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
     var pull_player=player_list[yourid];
     var pulled_player=player_list[CanvasNametoId[this.canvas.id]];
     console.log('x'+x);
@@ -178,8 +206,8 @@ function move_card(event){
     if(startflag==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
-    var x=(event.clientX-canvasrect.left)/canvas_scale;
-    var y=(event.clientY-canvasrect.top)/canvas_scale;
+    var x=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
+    var y=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
     var moved_player=player_list[CanvasNametoId[canvas.id]];
     var moved_card=null;
     var moved_card_idx=null;
@@ -197,8 +225,8 @@ function move_card(event){
         canvas.addEventListener("mouseleave", mup, false);
     }
     function mmove(event){
-        const mx=(event.clientX-canvasrect.left)/canvas_scale;
-        const my=(event.clientY-canvasrect.top)/canvas_scale;
+        const mx=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[canvas.id]];
+        const my=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[canvas.id]];
         let xoffset=mx-x;
         let yoffset=my-y;
         moved_card.position.x += xoffset;
@@ -358,7 +386,7 @@ socket.on('location', (players,cursor) => {
             });
             if(player.status=='pulled' && cursor.x!=null && cursor!=null){
                 const CursorImage=document.getElementById('cursor');
-                context.drawImage(CursorImage,cursor.x-10*canvas_scale,cursor.y,77*canvas_scale,105*canvas_scale);
+                context.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
             }
             if(player.status=='pull'){
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
