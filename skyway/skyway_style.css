@@ -75,6 +75,13 @@
   left: 0;
 }
 
+#ink-button{
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+}
+
 #audio_mute_trigger{
   position: absolute;
   bottom: 4%;

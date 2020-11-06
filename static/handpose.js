@@ -172,7 +172,7 @@ function move_card_byhand(center){
     }
     let xoffset=(x-moved_card.position.x);
     let yoffset=(y-moved_card.position.y);
-    console.log("xof:"+xoffset);
+    
     moved_card.position.x += xoffset;
     moved_card.position.y += yoffset ;
     if(moved_card.position.x<0){moved_card.position.x=0;}

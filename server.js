@@ -80,13 +80,12 @@ class Card{
       x:0,
       y:0
     };
+    this.inkoffset={
+      x:null,
+      y:null
+    }
   }
 }
-
-function skill(off_playerid, dif_playerid){
-  //何かしらのアルゴリズム
-}
-
 
 function shuffle_and_distribute(roomObject){
   let all_card=[]
@@ -322,6 +321,8 @@ io.on('connection',function(socket){
               socket.removeAllListeners('move');
               socket.removeAllListeners('cursor');
               socket.removeAllListeners('disconnect');
+              socket.removeAllListeners('shot');
+              socket.removeAllListeners('card_shotted');
               socket.emit('finish');
               socket.leave(roomid);
               leaved_socket_list.push(socket);
@@ -353,6 +354,23 @@ io.on('connection',function(socket){
       });
     });
 
+    //インクがとばされたとき
+    socket.on('shot',(id,x,y)=>{
+      io.to(roomid).emit('shotted',id,x,y);
+    })
+
+    //インクがカードにかかったとき
+    socket.on('card_shotted',(id,shotted_card_list,shotted_card_idx_list)=>{
+      redisClient.get(roomid,(_,value)=>{
+        roomObject=JSON.parse(value);
+        shotted_card_list.forEach((shotted_card,idx)=>{
+          var card_idx=shotted_card_idx_list[idx];
+          roomObject.player_list[id].cardlist[card_idx]=shotted_card;
+        })
+        redisClient.set(roomid,JSON.stringify(roomObject));
+      });
+    })
+
     socket.on('disconnect',()=>{
       if(timer){
         clearInterval(timer);
@@ -369,6 +387,8 @@ io.on('connection',function(socket){
           socket.removeAllListeners('pull');
           socket.removeAllListeners('move');
           socket.removeAllListeners('cursor');
+          socket.removeAllListeners('shot');
+          socket.removeAllListeners('card_shotted');
           socket.removeAllListeners('disconnect');
           socket.emit('disconnected');
           socket.leave(roomid);
@@ -395,6 +415,7 @@ app.use('/static', express.static(__dirname + '/static'));
 app.use('/skyway', express.static(__dirname + '/skyway'));
 
 app.get('/', (req, res) => {
+  res.setHeader( 'Access-Control-Allow-Origin', '*' );
   res.sendFile(path.join(__dirname, '/static/index.html'));
 });
 
