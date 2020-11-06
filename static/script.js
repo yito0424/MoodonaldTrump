@@ -65,6 +65,27 @@ const mark={
     4:'person4'
 }
 
+function getClientVideoSize(v){
+    var orgW = v.videoWidth;
+    var orgH = v.videoHeight;
+    var orgR = orgH / orgW;
+
+    var videoW = v.clientWidth;
+    var videoH = v.clientHeight;
+    var videoR = videoH / videoW;
+    var clientH;
+    var clientW
+
+    if(orgR > videoR){
+        clientH = v.clientHeight;
+        clientW = clientH / orgR;
+    }else{
+        clientW = v.clientWidth;
+        clientH = clientW * orgR;
+    }
+    return {height:clientH,width:clientW}
+}
+
 for(var i=1;i<=4;i++){
     const canvas=document.getElementById(CanvasIdtoName[i]);
     const video=document.getElementById(PlayerIdtoVideo[i]);
@@ -213,32 +234,23 @@ var skill_flag=0;
 }*/
 
 // 点滅「on」状態
-function show()
-{
-	if (document.getElementById)
-	document.getElementById("alart").style.visibility = "visible";
-}
-// 点滅「off」状態
-function hide()
-{
-	if (document.getElementById)
-	document.getElementById("alart").style.visibility = "hidden";
-}
-hide();
+// function show()
+// {
+// 	if (document.getElementById)
+// 	document.getElementById("alart").style.visibility = "visible";
+// }
+// // 点滅「off」状態
+// function hide()
+// {
+// 	if (document.getElementById)
+// 	document.getElementById("alart").style.visibility = "hidden";
+// }
+// hide();
 // 点滅効果を出すために「on」と「off」の状態を450ミリ秒ごとに切り替え
 // 4500ミリ秒後に終了 (5秒未満)
 function specialskill(){
     //if(startflag==0){return;}
-    if(inkFlag==0){
-        console.log('skill発動')
-        SkillTriger.textContent="必殺技使用済み"
-        for(var i=900; i < 4500; i=i+900){
-	        setTimeout("hide()",i);
-            setTimeout("show()",i+450);
-        }
-        setTimeout("hide()",4800);
-        setTimeout(console.log("skill終了"), 4900);
-    }
+
     skill_flag=1;
 }
 
@@ -274,8 +286,13 @@ function draw_card(canvas_name,context,ink_ctx,card){
         if(card.inkoffset.x){
             // console.log('inkoffset');
             // console.log(card.inkoffset);
-            console.log('canvasscale'+canvas_scale_list[canvas_id]);
-            var CardImage=document.getElementById(card.mark+'-'+String(card.number));
+            // console.log('canvasscale'+canvas_scale_list[canvas_id]);
+            var CardImage;
+            if(card.mark=='joker'){
+                CardImage=document.getElementById('joker');
+            }else{
+                CardImage=document.getElementById(card.mark+'-'+String(card.number));
+            }
             context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
             const inkImage=document.getElementById('ink');
             context.globalCompositeOperation='destination-in';
@@ -285,7 +302,7 @@ function draw_card(canvas_name,context,ink_ctx,card){
             context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
             const cpcanvas=document.getElementById(CanvasIdtoName[canvas_id]);
             var image = context.getImageData(0, 0, cpcanvas.width, cpcanvas.height);
-            console.log(image);
+            // console.log(image);
             ink_ctx.putImageData(image,0,0,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
 
         }else{

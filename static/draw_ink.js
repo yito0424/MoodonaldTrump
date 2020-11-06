@@ -14,6 +14,7 @@ function setInkFlag(){
 function chooseInkArea(event){
     if(inkFlag==0){return;}
     inkFlag=2; //以降はインクを使えない
+    inkButton.textContent="必殺技使用済み";
     if(startflag==0){return;}
     console.log(event.currentTarget.id);
     var canvasrect = event.currentTarget.getBoundingClientRect();
@@ -23,46 +24,78 @@ function chooseInkArea(event){
     socket.emit('shot',InkCanvasNametoId[event.currentTarget.id],x,y);
 }
 
+function show(alart_img)
+{
+    console.log("見せる");
+    alart_img.style.visibility = "visible";
+}
+// 点滅「off」状態
+function hide(alart_img)
+{
+    alart_img.style.visibility = "hidden";
+}
+
 socket.on('shotted',(id,x,y)=>{
     console.log(id);
-    console.log('x:'+x+'y:'+y);
-    var inkCanvas=document.getElementById('ink-canvas'+id);
-    var shotted_card_list=[];
-    var shotted_card_idx_list=[];
-    var inkoffset_list=[];
-    inkCanvas.style.zIndex=2;
-    var context=inkCanvas.getContext('2d');
-    context.globalCompositeOperation = 'source-over';
-    context.fillStyle = "#990000";
-    context.fillRect(0,0,inkCanvas.width,inkCanvas.height);
-    player_list[id].cardlist.forEach((card,idx)=>{
-        if(!(card.position.x<=(x-inkHW/2-TrumpWidth) || (card.position.x<=(x-inkHW/2) && card.position.x<(x+inkHW/2) && (card.position.y>=y+inkHW/2 || card.position.y<=y-inkHW/2-TrumpHeight)) || card.position.x>=(x+inkHW/2))){
-            if(card.mark=='joker'){
-                const CardImage=document.getElementById('joker');
-                context.drawImage(CardImage,card.position.x*canvas_scale_list[id],card.position.y*canvas_scale_list[id],TrumpWidth*canvas_scale_list[id],TrumpHeight*canvas_scale_list[id]);
-            }else{
-                const CardImage=document.getElementById(card.mark+'-'+String(card.number));
-                context.drawImage(CardImage,card.position.x*canvas_scale_list[id],card.position.y*canvas_scale_list[id],TrumpWidth*canvas_scale_list[id],TrumpHeight*canvas_scale_list[id]);
+    console.log('skill発動');
+    const alart_img=document.getElementById("alart_img");
+    if(id==1){
+        alart_img.style.top='0%';
+        alart_img.style.left='0%';
+    }
+    else if(id==2){
+        alart_img.style.top='0%';
+        alart_img.style.left='50%';
+    }
+    else if(id==3){
+        alart_img.style.top='50%';
+        alart_img.style.left='0%';
+    }
+    else{
+        alart_img.style.top='50%';
+        alart_img.style.left='50%';
+    }
+    for(var i=0; i < 5000; i=i+1000){
+        setTimeout(()=>{show(alart_img);},i);
+        setTimeout(()=>{hide(alart_img);},i+500);
+    }
+    setTimeout(()=>{
+        console.log('x:'+x+'y:'+y);
+        var inkCanvas=document.getElementById('ink-canvas'+id);
+        var shotted_card_list=[];
+        var shotted_card_idx_list=[];
+        var inkoffset_list=[];
+        inkCanvas.style.zIndex=2;
+        var context=inkCanvas.getContext('2d');
+        context.globalCompositeOperation = 'source-over';
+        context.fillStyle = "#990000";
+        context.fillRect(0,0,inkCanvas.width,inkCanvas.height);
+        player_list[id].cardlist.forEach((card,idx)=>{
+            if(!(card.position.x<=(x-inkHW/2-TrumpWidth) || (card.position.x<=(x-inkHW/2) && card.position.x<(x+inkHW/2) && (card.position.y>=y+inkHW/2 || card.position.y<=y-inkHW/2-TrumpHeight)) || card.position.x>=(x+inkHW/2))){
+                if(card.mark=='joker'){
+                    const CardImage=document.getElementById('joker');
+                    context.drawImage(CardImage,card.position.x*canvas_scale_list[id],card.position.y*canvas_scale_list[id],TrumpWidth*canvas_scale_list[id],TrumpHeight*canvas_scale_list[id]);
+                }else{
+                    const CardImage=document.getElementById(card.mark+'-'+String(card.number));
+                    context.drawImage(CardImage,card.position.x*canvas_scale_list[id],card.position.y*canvas_scale_list[id],TrumpWidth*canvas_scale_list[id],TrumpHeight*canvas_scale_list[id]);
+                }
+                card.inkoffset={x:card.position.x-x,y:card.position.y-y}
+                // console.log(card);
+                shotted_card_list.push(card);
+                shotted_card_idx_list.push(idx);
+                // console.log('cardposition');
+                // console.log(card.position);
+                // console.log('inkx'+x);
+                // console.log('inky'+y);
             }
-            card.inkoffset={x:card.position.x-x,y:card.position.y-y}
-            console.log(card);
-            shotted_card_list.push(card);
-            shotted_card_idx_list.push(idx);
-            // console.log('cardposition');
-            // console.log(card.position);
-            // console.log('inkx'+x);
-            // console.log('inky'+y);
-        }
-    });
-    socket.emit('card_shotted',id,shotted_card_list,shotted_card_idx_list);
-    const inkImage=document.getElementById('ink');
-    inkImage.style.width=inkHW*canvas_scale_list[id];
-    inkImage.style.height=inkHW*canvas_scale_list[id];
-    context.globalCompositeOperation = 'destination-in';
-    context.drawImage(inkImage,(x-inkHW/2)*canvas_scale_list[id],(y-inkHW/2)*canvas_scale_list[id],inkHW*canvas_scale_list[id],inkHW*canvas_scale_list[id]);
-    var URI=inkCanvas.toDataURL();
-    var inkCanvasImg=new Image();
-    inkCanvasImg.src=URI;
-    inkCanvasImgList[id]=inkCanvasImg;
-    console.log("終了");
+        });
+        socket.emit('card_shotted',id,shotted_card_list,shotted_card_idx_list);
+        // const inkImage=document.getElementById('ink');
+        // inkImage.style.width=inkHW*canvas_scale_list[id];
+        // inkImage.style.height=inkHW*canvas_scale_list[id];
+        // context.globalCompositeOperation = 'destination-in';
+        // context.drawImage(inkImage,(x-inkHW/2)*canvas_scale_list[id],(y-inkHW/2)*canvas_scale_list[id],inkHW*canvas_scale_list[id],inkHW*canvas_scale_list[id]);
+ 
+        console.log("終了");
+    },5000);
 })
