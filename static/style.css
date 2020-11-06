@@ -126,3 +126,43 @@ html{
     z-index:1;
     /* transform:scaleX(-1); */
 }
+
+.resizeimage img { 
+    width:50%;
+    height:auto; 
+}
+
+.alart_img{
+    opacity:0.5;
+}
+
+#skill_trigger{
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    
+}
+
+.skill_button{
+    background: #daa520;
+    background-color: #daa520;
+    border-color: #daa520;
+    /* border: none; */
+    border-radius: 100vh;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+}
+/*.switch-on{
+    display: inline-block;
+    height:30px;
+    color: red;
+    font-size:30px;
+    font-weight: bold;
+    visibility: visible;
+}
+.switch-off{
+    display: inline-block;
+    height:30px;
+    visibility: hidden;
+}*/

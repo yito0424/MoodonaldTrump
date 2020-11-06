@@ -83,6 +83,11 @@ class Card{
   }
 }
 
+function skill(off_playerid, dif_playerid){
+  //何かしらのアルゴリズム
+}
+
+
 function shuffle_and_distribute(roomObject){
   let all_card=[]
   for(var num=1;num<=13;num++){
