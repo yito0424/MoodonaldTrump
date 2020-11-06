@@ -87,6 +87,7 @@ async function skyway_main() {
   //ビデオサイズに合わせてキャンバスサイズを調整
   const canvas=document.getElementById(CanvasIdtoName[yourid]);
   const inkCanvas=document.getElementById(InkCanvasIdtoName[yourid]);
+  const inkOnlyCanvas=document.getElementById(InkOnlyCanvasIdtoName[yourid]);
   const video=person_array[yourid-1];
   if(!video.paused){
       const vh=getClientVideoSize(video).height;
@@ -100,6 +101,10 @@ async function skyway_main() {
           inkCanvas.style.width=vh*1.5;
           inkCanvas.height = vh;
           inkCanvas.width = vh*1.5;
+          inkOnlyCanvas.style.height=vh;
+          inkOnlyCanvas.style.width=vh*1.5;
+          inkOnlyCanvas.height = vh;
+          inkOnlyCanvas.width = vh*1.5;
 
       }else{
           canvas.style.width=vw;
@@ -110,6 +115,10 @@ async function skyway_main() {
           inkCanvas.style.height=vw/1.5;
           inkCanvas.width=vw;
           inkCanvas.height=vw/1.5;
+          inkOnlyCanvas.style.width=vw;
+          inkOnlyCanvas.style.height=vw/1.5;
+          inkOnlyCanvas.width=vw;
+          inkOnlyCanvas.height=vw/1.5;
       }
       canvas_scale_list[yourid]=vw/450;
   }
@@ -157,6 +166,7 @@ async function skyway_main() {
       //ビデオサイズに合わせてキャンバスサイズを調整
       const canvas=document.getElementById(CanvasIdtoName[count_stream+1]);
       const inkCanvas=document.getElementById(InkCanvasIdtoName[count_stream+1]);
+      const inkOnlyCanvas=document.getElementById(InkOnlyCanvasIdtoName[count_stream+1]);
       const video=person_array[count_stream];
       // console.log("canvas"+canvas.clientWidth);
       // console.log("person"+player.clientHeight);
@@ -174,6 +184,10 @@ async function skyway_main() {
               inkCanvas.style.width=vh*1.5;
               inkCanvas.height = vh;
               inkCanvas.width = vh*1.5;
+              inkOnlyCanvas.style.height=vh;
+              inkOnlyCanvas.style.width=vh*1.5;
+              inkOnlyCanvas.height = vh;
+              inkOnlyCanvas.width = vh*1.5;
           }else{
               canvas.style.width=vw;
               canvas.style.height=vw/1.5;
@@ -183,6 +197,10 @@ async function skyway_main() {
               inkCanvas.style.height=vw/1.5;
               inkCanvas.width=vw;
               inkCanvas.height=vw/1.5;
+              inkOnlyCanvas.style.width=vw;
+              inkOnlyCanvas.style.height=vw/1.5;
+              inkOnlyCanvas.width=vw;
+              inkOnlyCanvas.height=vw/1.5;
           }
           canvas_scale_list[count_stream+1]=vw/450;
     }

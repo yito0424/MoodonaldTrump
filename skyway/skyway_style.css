@@ -1,5 +1,6 @@
 
 .container {
+  position:relative;
   margin-left: auto;
   margin-right: auto;
   width: 100%;
@@ -66,12 +67,12 @@
 }
 
 .br{
-  bottom: 0;
+  bottom:0;
   right: 0;
 }
 
 .bl{
-  bottom: 0;
+  bottom:0;
   left: 0;
 }
 

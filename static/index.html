@@ -34,7 +34,7 @@
     <h1 id='start-msg'>Press Space to Start</h1>
     <!-- <input type="button" value="pose1" onclick="PoseClickEvent(this.value)" id="special-button"> -->
 
-    <canvas id="mmd-model" width=400px height=400px></canvas>
+    <canvas id="mmd-model" width=400px height=400px style="z-index:0"></canvas>
     <div class="box-wrap">
       <div class="box tl" id='player1'>
           <p class='player-name'>Player1</p>
@@ -42,6 +42,7 @@
           <video class="streams" id="person1"></video>
           <canvas id="canvas1" width=450px height=300px style="object-fit:none;" class="game-canvas"></canvas>
           <canvas id="ink-canvas1" width=450px height=300px style="object-fit:none;" class="ink-canvas"></canvas>
+          <canvas id="ink-only-canvas1"  class="ink-only-canvas"></canvas>
       </div>
       <div class="box tr" id='player2'>
           <p class='player-name'>Player2</p>
@@ -49,6 +50,7 @@
           <video class="streams" id="person2"></video>
           <canvas id="canvas2" width=450px height=300px style="object-fit:none;" class="game-canvas"></canvas>
           <canvas id="ink-canvas2" width=450px height=300px style="object-fit:none;" class="ink-canvas"></canvas>
+          <canvas id="ink-only-canvas2"  class="ink-only-canvas"></canvas>
       </div>
       <div class="box bl" id='player3'>
         <p class='player-name'>Player3</p>
@@ -56,6 +58,7 @@
         <video class="streams" id="person3"></video>
         <canvas id="canvas3" width=450px height=300px style="object-fit:none;" class="game-canvas"></canvas>
         <canvas id="ink-canvas3" width=450px height=300px style="object-fit:none;" class="ink-canvas"></canvas>
+        <canvas id="ink-only-canvas3"  class="ink-only-canvas"></canvas>
       </div>
       <div class="box br" id='player4'>
         <p class='player-name'>Player4</p>
@@ -63,21 +66,22 @@
         <video class="streams" id="person4"></video>
         <canvas id="canvas4" width=450px height=300px style="object-fit:none;" class="game-canvas"></canvas>
         <canvas id="ink-canvas4" width=450px height=300px style="object-fit:none;" class="ink-canvas"></canvas>
+        <canvas id="ink-only-canvas4"  class="ink-only-canvas"></canvas>
       </div>
     </div>
 
     <!-- <button id="skill_trigger" class="skill_button">必殺技</button> -->
     <div class="button-bar">
-      <button type="button" id="ink-button" onclick="setInkFlag();">インク</button>
+      <button type="button" id="ink-button" onclick="setInkFlag();">スキル</button>
       <button id="audio_mute_trigger" class="mute_button">ミュート</button>
       <button id="video_mute_trigger" class="mute_button">ビデオの停止</button>
+      <h4 id="skill-msg"></h4>
     </div>  
-    
-    <img src="./static/red.jpeg" id="alart_img"></img>
 
     <div id="image-wrapper" style="display: none;"></div>
 
   </div>
+  <img src="./static/red.jpeg" id="alart_img"></img>
   </body>
   <script src="/static/script.js"></script>
   <script src="/static/handpose.js"></script>

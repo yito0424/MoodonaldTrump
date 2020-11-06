@@ -161,6 +161,9 @@ function start_mmd(){
  * And, Get Vmd Loop Event
  */
 VmdControl = (id, loop,direction) => {
+  console.log("vmd");
+  mmdcanvas=document.querySelector('#mmd-model');
+  mmdcanvas.style.zIndex=3;
   //cameraの作成
   var rightLeft=50;
   var frontBehind=40;
@@ -225,12 +228,11 @@ VmdControl = (id, loop,direction) => {
   mixer.addEventListener("finished", (event) => {
     console.log("finished");
     scene.remove(scene.children[1]);
-    // VmdControl("loop", true);
+    mmdcanvas.style.zIndex=0;
   });
 
   ready = true;
 }
-
 
 
 /*
@@ -276,8 +278,4 @@ PoseClickEvent = (id) => {
       VmdControl("loop", false,1);
       break;
   }
-}
-
-function setInkFlag(){
-  console.log("special!!!!!");
 }

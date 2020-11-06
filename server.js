@@ -82,7 +82,8 @@ class Card{
     };
     this.inkoffset={
       x:null,
-      y:null
+      y:null,
+      id:null
     }
   }
 }
@@ -355,17 +356,33 @@ io.on('connection',function(socket){
     });
 
     //インクがとばされたとき
-    socket.on('shot',(id,x,y)=>{
-      io.to(roomid).emit('shotted',id,x,y);
+    socket.on('shot',(shot_id,shotted_id,x,y)=>{
+      io.to(roomid).emit('shotted',shot_id,shotted_id,x,y);
+      setTimeout(()=>{ 
+        redisClient.get(roomid,(_,value)=>{
+          roomObject=JSON.parse(value);
+          for (var i=1;i<=Object.keys(roomObject.player_list).length;i++){
+            for(var j=0;j<roomObject.player_list[i].cardlist.length;j++){
+              if(roomObject.player_list[i].cardlist[j].inkoffset.id==shot_id){
+                console.log("はいってるよ");
+                roomObject.player_list[i].cardlist[j].inkoffset.x=null;
+                roomObject.player_list[i].cardlist[j].inkoffset.y=null;
+                roomObject.player_list[i].cardlist[j].inkoffset.id=null;
+              }
+            }
+          }
+          redisClient.set(roomid,JSON.stringify(roomObject));
+        });
+      },20000);
     })
 
     //インクがカードにかかったとき
-    socket.on('card_shotted',(id,shotted_card_list,shotted_card_idx_list)=>{
+    socket.on('card_shotted',(shotted_id,shotted_card_list,shotted_card_idx_list)=>{
       redisClient.get(roomid,(_,value)=>{
         roomObject=JSON.parse(value);
         shotted_card_list.forEach((shotted_card,idx)=>{
           var card_idx=shotted_card_idx_list[idx];
-          roomObject.player_list[id].cardlist[card_idx]=shotted_card;
+          roomObject.player_list[shotted_id].cardlist[card_idx]=shotted_card;
         })
         redisClient.set(roomid,JSON.stringify(roomObject));
       });

@@ -50,6 +50,20 @@ const InkCanvasIdtoName={
     4:'ink-canvas4'
 }
 
+const InkOnlyCanvasNametoId={
+    'ink-only-canvas1':1,
+    'ink-only-canvas2':2,
+    'ink-only-canvas3':3,
+    'ink-only-canvas4':4
+}
+
+const InkOnlyCanvasIdtoName={
+    1:'ink-only-canvas1',
+    2:'ink-only-canvas2',
+    3:'ink-only-canvas3',
+    4:'ink-only-canvas4'
+}
+
 const mark={
     1:'heart',
     2:'spade',
@@ -109,6 +123,7 @@ window.addEventListener("resize",()=>{
     for(var i=1;i<=4;i++){
         const canvas=document.getElementById(CanvasIdtoName[i]);
         const inkCanvas=document.getElementById(InkCanvasIdtoName[i]);
+        const inkOnlyCanvas=document.getElementById(InkOnlyCanvasIdtoName[i]);
         const video=document.getElementById(PlayerIdtoVideo[i]);
         // console.log("canvas"+canvas.clientWidth);
         // console.log("person"+player.clientHeight);
@@ -126,6 +141,10 @@ window.addEventListener("resize",()=>{
                 inkCanvas.style.width=vh*1.5;
                 inkCanvas.height = vh;
                 inkCanvas.width = vh*1.5;
+                inkOnlyCanvas.style.height=vh;
+                inkOnlyCanvas.style.width=vh*1.5;
+                inkOnlyCanvas.height = vh;
+                inkOnlyCanvas.width = vh*1.5;
             }else{
                 canvas.style.width=vw;
                 canvas.style.height=vw/1.5;
@@ -135,6 +154,10 @@ window.addEventListener("resize",()=>{
                 inkCanvas.style.height=vw/1.5;
                 inkCanvas.width=vw;
                 inkCanvas.height=vw/1.5;
+                inkOnlyCanvas.style.width=vw;
+                inkOnlyCanvas.style.height=vw/1.5;
+                inkOnlyCanvas.width=vw;
+                inkOnlyCanvas.height=vw/1.5;
             }
             canvas_scale_list[i]=vw/450;
 
@@ -205,6 +228,11 @@ function load_img(){
     elem4.setAttribute('id','ink');
     elem4.setAttribute('style','display:none;');
     ImageLoader.appendChild(elem4);
+    const elem5=document.createElement('img');
+    elem5.setAttribute('src','/static/ink_trans.png');
+    elem5.setAttribute('id','ink-trans');
+    elem5.setAttribute('style','display:none;');
+    ImageLoader.appendChild(elem5);
 
     console.log('all image loaded');
 }
@@ -317,13 +345,13 @@ function choose_or_paint_card(event){
     if(startflag==0){return;}
     if(inkFlag==1){chooseInkArea(event); return;}
     var canvasrect = this.canvas.getBoundingClientRect();
-    const x=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
-    const y=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
+    const x=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
+    const y=(event.clientY-canvasrect.top)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
     var pull_player=player_list[yourid];
-    var pulled_player=player_list[InkCanvasNametoId[this.canvas.id]];
+    var pulled_player=player_list[InkOnlyCanvasNametoId[this.canvas.id]];
     console.log('x'+x);
     console.log('y'+y);
-    console.log('canvasnametoid'+InkCanvasNametoId[this.canvas.id]);
+    console.log('canvasnametoid'+InkOnlyCanvasNametoId[this.canvas.id]);
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         var pulled_card=null;
         var pulled_card_idx=null;
@@ -344,9 +372,9 @@ function move_card(event){
     if(startflag==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
-    var x=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
-    var y=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
-    var moved_player=player_list[InkCanvasNametoId[canvas.id]];
+    var x=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
+    var y=(event.clientY-canvasrect.top)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
+    var moved_player=player_list[InkOnlyCanvasNametoId[canvas.id]];
     var moved_card=null;
     var moved_card_idx=null;
     if(moved_player.status=='pulled' && player_list[yourid].status=='pulled' || moved_player.status=='normal1' && player_list[yourid].status=='normal1'|| moved_player.status=='normal2' && player_list[yourid].status=='normal2'|| moved_player.status=='pull' && player_list[yourid].status=='pull'){//変更
@@ -363,8 +391,8 @@ function move_card(event){
         canvas.addEventListener("mouseleave", mup, false);
     }
     function mmove(event){
-        const mx=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[canvas.id]];
-        const my=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[canvas.id]];
+        const mx=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]];
+        const my=(event.clientY-canvasrect.top)/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]];
         let xoffset=mx-x;
         let yoffset=my-y;
         moved_card.position.x += xoffset;
@@ -392,7 +420,7 @@ function move_cursor(event){
     var x=event.clientX-canvasrect.left;
     var y=event.clientY-canvasrect.top;
     var pull_player=player_list[yourid];
-    var pulled_player=player_list[InkCanvasNametoId[canvas.id]];
+    var pulled_player=player_list[InkOnlyCanvasNametoId[canvas.id]];
 
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         socket.emit('cursor',canvas.id,x,y);
@@ -426,7 +454,7 @@ socket.on('started',(player_num)=>{
         msg.zIndex=-1;
     });
     for(var i=1;i<=player_num;i++){
-        const canvas=document.getElementById(InkCanvasIdtoName[i]);
+        const canvas=document.getElementById(InkOnlyCanvasIdtoName[i]);
         if(!eventlistener_exist[i]){
             canvas.addEventListener('click',{
                 handleEvent:choose_or_paint_card,
@@ -497,6 +525,8 @@ socket.on('distributed',(players)=>{
 socket.on('finish',()=>{
     StartMsg.innerHTML='Finish!!';
     player_list={};
+    inkFlag=0;
+    inkButton.textContent='スキル';
     socket.emit('remove-interval');
     wait_and_reset(5,1);
 });
@@ -521,7 +551,7 @@ socket.on('location', (players,cursor) => {
                 cardlist=getReverseCardList(player.cardlist);
             }
             context.lineWidth=10;
-            context.strokeRect(0,0,canvas.width,canvas.height);
+            // context.strokeRect(0,0,canvas.width,canvas.height);
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
@@ -558,6 +588,8 @@ socket.on('disconnected',()=>{
     console.log("disconnected");
     StartMsg.innerHTML='Someone disconnected';
     player_list={};
+    inkFlag=0;
+    inkButton.textContent='必殺技';
     socket.emit('remove-interval');
     wait_and_reset(5,1);
 });
