@@ -204,8 +204,8 @@ var skill_flag=0;
     SkillTriger.addEventListener('click', specialskill);
 }*/
 
-const SkillTriger = document.getElementById('skill_trigger');
-SkillTriger.addEventListener('click', specialskill);
+// const SkillTriger = document.getElementById('skill_trigger');
+// SkillTriger.addEventListener('click', specialskill);
 
 /*function specialskill_select(){
     if()
@@ -229,7 +229,7 @@ hide();
 // 4500ミリ秒後に終了 (5秒未満)
 function specialskill(){
     //if(startflag==0){return;}
-    if(skill_flag==0){
+    if(inkFlag==0){
         console.log('skill発動')
         SkillTriger.textContent="必殺技使用済み"
         for(var i=900; i < 4500; i=i+900){
