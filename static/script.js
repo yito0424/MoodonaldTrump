@@ -159,6 +159,60 @@ function load_img(){
     console.log('all image loaded');
 }
 
+var skill_flag=0;
+
+/*function player_select(){
+    document.body.addEventListener( "click", function( event ) {
+	    var x = event.pageX ;
+        var y = event.pageY ;
+        console.log(x,y);
+        if(x>=0 && x<=563 && y>=0 && y<=398) document.getElementById("player1");
+        else if(x>563 && yy>=0 && y<=398) document.getElementById("player2");
+        else if(x>=0 && x<=563 && y>398) document.getElementById("player3");
+        else if(x>563 && y>398) document.getElementById("player4");
+    } ) ;
+    const SkillTriger = document.getElementById('skill_trigger');
+    SkillTriger.addEventListener('click', specialskill);
+}*/
+
+const SkillTriger = document.getElementById('skill_trigger');
+SkillTriger.addEventListener('click', specialskill);
+
+/*function specialskill_select(){
+    if()
+    SkillTriger.addEventListener('click', specialskill);
+}*/
+
+// 点滅「on」状態
+function show()
+{
+	if (document.getElementById)
+	document.getElementById("alart").style.visibility = "visible";
+}
+// 点滅「off」状態
+function hide()
+{
+	if (document.getElementById)
+	document.getElementById("alart").style.visibility = "hidden";
+}
+hide();
+// 点滅効果を出すために「on」と「off」の状態を450ミリ秒ごとに切り替え
+// 4500ミリ秒後に終了 (5秒未満)
+function specialskill(){
+    //if(startflag==0){return;}
+    if(skill_flag==0){
+        console.log('skill発動')
+        SkillTriger.textContent="必殺技使用済み"
+        for(var i=900; i < 4500; i=i+900){
+	        setTimeout("hide()",i);
+            setTimeout("show()",i+450);
+        }
+        setTimeout("hide()",4800);
+        setTimeout(console.log("skill終了"), 4900);
+    }
+    skill_flag=1;
+}
+
 function draw_card(canvas_name,context,card){
     var canvas_id=CanvasNametoId[canvas_name];
     if(canvas_id==yourid){
