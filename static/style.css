@@ -2,10 +2,16 @@
 html{
     background-color:  #004840;
 }
+
 /* darkcyan */
 /* rgb(226, 199, 168) */
 /* rgb(70, 145, 145) */
 /* rgb(12, 59, 90) */
+
+body{
+    position:relative;
+}
+
 .player-name{
     position: absolute;
     top: 10px;
@@ -136,6 +142,17 @@ html{
 }
 
 
+#alart_img{
+    position:absolute;
+    top:0%;
+    left:0%;
+    opacity:0.5;
+    width:50%;
+    height:50%;
+    z-index: 2;
+    visibility:hidden;
+}
+
 #skill_trigger{
     position: absolute;
     bottom: 8%;
@@ -165,7 +182,7 @@ html{
     width:100%;
     max-height:85%;
     max-width: 100%;
-    z-index:2;
+    z-index:3;
 }
 
 /* #ink-button{
