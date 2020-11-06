@@ -559,7 +559,7 @@ socket.on('location', (players,cursor) => {
             });
             if(player.status=='pulled' && cursor.x!=null && cursor!=null){
                 const CursorImage=document.getElementById('cursor');
-                context.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
+                ink_ctx.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
             }
             if(player.status=='pull'){
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
