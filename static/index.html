@@ -11,17 +11,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <link rel="stylesheet" href="../skyway/skyway_style.css">
+    <link rel="stylesheet" href="/skyway/skyway_style.css">
     <!-- Favicons -->
     <link href="/static/favicon.ico" rel="icon">
     <link href="/static/favicon.ico" rel="apple-touch-icon">
 
+    <!-- for displaying mmd -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/build/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/libs/mmdparser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ammo.js@0.0.10/ammo.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/loaders/TGALoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/loaders/MMDLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/animation/MMDAnimationHelper.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/effects/OutlineEffect.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/animation/CCDIKSolver.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r106/examples/js/animation/MMDPhysics.js"></script>
+
   </head>
-  <body style="width:100%;height:100%;margin:0;" onload="get_query(); player_join(); load_img();">
+  <body style="width:100%;height:100%;margin:0;" onload="get_query(); player_join(); load_img(); start_mmd();">
     <div class="container">
     <h1 id='start-msg'>Press Space to Start</h1>
+    <!-- <input type="button" value="pose1" onclick="PoseClickEvent(this.value)" id="special-button"> -->
 
-    <div class="box-wrap"></div>
+    <canvas id="mmd-model" width=400px height=400px></canvas>
+    <div class="box-wrap">
       <div class="box tl" id='player1'>
           <p class='player-name'>Player1</p>
           <h2 class="win-msg" id='win-msg1'>test</h2>
@@ -48,8 +62,11 @@
       </div>
     </div>
 
-    <button id="audio_mute_trigger" class="mute_button">ミュート</button>
-    <button id="video_mute_trigger" class="mute_button">ビデオの停止</button>
+    <div class="button-bar">
+      <button type="button" id="ink-button" onclick="setInkFlag();">インク</button>
+      <button id="audio_mute_trigger" class="mute_button">ミュート</button>
+      <button id="video_mute_trigger" class="mute_button">ビデオの停止</button>
+    </div>
 
     <div id="image-wrapper" style="display: none;"></div>
 
@@ -58,7 +75,8 @@
   <script src="/static/script.js"></script>
   <script src="/static/handpose.js"></script>
   <script src="//cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
-  <script src="../skyway/key.js"></script>
-  <script src="../skyway/skyway_script.js"></script>
+  <script src="/skyway/key.js"></script>
+  <script src="/skyway/skyway_script.js"></script>
+  <script src="/mmd/mmdSetting.js"></script>
 
 </html>

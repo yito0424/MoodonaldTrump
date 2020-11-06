@@ -1,7 +1,11 @@
 
 html{
-    background-color:#004840;
+    background-color:  #004840;
 }
+/* darkcyan */
+/* rgb(226, 199, 168) */
+/* rgb(70, 145, 145) */
+/* rgb(12, 59, 90) */
 .player-name{
     position: absolute;
     top: 10px;
@@ -10,6 +14,9 @@ html{
     font-size:30px;
     font-family: 'Lobster', cursive;
     margin:0;
+    color:whitesmoke;
+    /* orange */
+
 }
 
 #start-msg{
@@ -19,7 +26,8 @@ html{
     top:45%;
     left:50%;
     transform: translateY(-50%) translateX(-50%);
-    color:#daa520;
+    color: #daa520;
+    /* #daa520 */
     z-index: 999;
 }
 
@@ -125,4 +133,56 @@ html{
     max-width: 100%;
     z-index:1;
     /* transform:scaleX(-1); */
+}
+
+/* #ink-button{
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 9999;
+} */
+
+#mmd-model{
+    position:absolute;
+    top:55%;
+    left:50%;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 9999;
+}
+
+#ink-button {
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    font-size: 16px;
+    color: #FFF;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: 20px;
+    background-image: linear-gradient(-90deg, #FF006E,#FFD500);
+    transition: .5s;
+    background-size: 200%;
+    position: relative;
+    margin: 20px;
+    /* position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%); */
+    z-index: 9999;
+}
+  
+#ink-button:hover {
+    background-position: right center;
+}
+
+.button-bar{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    height: 10%;
+    background-color: rgb(14, 21, 34);
+    text-align: center;
 }
