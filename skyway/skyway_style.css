@@ -40,7 +40,7 @@
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  height: 100%;
+  height: 90%;
 }
 
 .box{
@@ -51,7 +51,7 @@
   color:white;
   width: 50%;
   height: 50%;
-  border: 1px solid white;
+  border: 1px solid whitesmoke;
   box-sizing: border-box;
 }
 
@@ -83,26 +83,31 @@
 }
 
 #audio_mute_trigger{
-  position: absolute;
-  bottom: 4%;
+  position: relative;
+  /* bottom: 4%;
   left: 50%;
-  transform: translateY(-50%) translateX(-50%);
+  transform: translateY(-50%) translateX(-50%); */
 
 }
 
 #video_mute_trigger{
-  position: absolute;
-  bottom: 0%;
+  position: relative;
+  /* bottom: 0%;
   left: 50%;
-  transform: translateY(-50%) translateX(-50%);
+  transform: translateY(-50%) translateX(-50%); */
 }
 
 .mute_button{
-  background: #daa520;
-  background-color: #daa520;
+  background:rgb(0, 119, 255);
+  /* background: #daa520; */
+  /* background-color: #daa520; */
+  background-color: rgb(0, 132, 255);
   border-color: #daa520;
   /* border: none; */
   border-radius: 100vh;
   color: #fff;
   font-family: 'Roboto', sans-serif;
+  z-index: 9999;
+  margin: 20px;
+
 }

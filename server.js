@@ -413,6 +413,7 @@ io.on('connection',function(socket){
 
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/skyway', express.static(__dirname + '/skyway'));
+app.use('/mmd', express.static(__dirname + '/mmd'));
 
 app.get('/', (req, res) => {
   res.setHeader( 'Access-Control-Allow-Origin', '*' );
