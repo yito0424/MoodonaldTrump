@@ -126,3 +126,14 @@ html{
     z-index:1;
     /* transform:scaleX(-1); */
 }
+
+.ink-canvas{
+    position: absolute;
+    top:15%;
+    margin: 0 auto;
+    height:85%;
+    width:100%;
+    max-height:85%;
+    max-width: 100%;
+    z-index:2;
+}

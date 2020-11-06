@@ -35,6 +35,21 @@ const CanvasNametoId={
     'canvas3':3,
     'canvas4':4
 };
+
+const InkCanvasNametoId={
+    'ink-canvas1':1,
+    'ink-canvas2':2,
+    'ink-canvas3':3,
+    'ink-canvas4':4
+}
+
+const InkCanvasIdtoName={
+    1:'ink-canvas1',
+    2:'ink-canvas2',
+    3:'ink-canvas3',
+    4:'ink-canvas4'
+}
+
 const mark={
     1:'heart',
     2:'spade',
@@ -72,6 +87,7 @@ window.addEventListener("resize",()=>{
     // console.log("height"+100*p1.clientHeight/divtag.clientHeight);
     for(var i=1;i<=4;i++){
         const canvas=document.getElementById(CanvasIdtoName[i]);
+        const inkCanvas=document.getElementById(InkCanvasIdtoName[i]);
         const video=document.getElementById(PlayerIdtoVideo[i]);
         // console.log("canvas"+canvas.clientWidth);
         // console.log("person"+player.clientHeight);
@@ -85,11 +101,19 @@ window.addEventListener("resize",()=>{
                 canvas.style.width=vh*1.5;
                 canvas.height = vh;
                 canvas.width = vh*1.5;
+                inkCanvas.style.height=vh;
+                inkCanvas.style.width=vh*1.5;
+                inkCanvas.height = vh;
+                inkCanvas.width = vh*1.5;
             }else{
                 canvas.style.width=vw;
                 canvas.style.height=vw/1.5;
                 canvas.width=vw;
                 canvas.height=vw/1.5;
+                inkCanvas.style.width=vw;
+                inkCanvas.style.height=vw/1.5;
+                inkCanvas.width=vw;
+                inkCanvas.height=vw/1.5;
             }
             canvas_scale_list[i]=vw/450;
 
@@ -155,37 +179,79 @@ function load_img(){
     elem3.setAttribute('id','cursor');
     elem3.setAttribute('style','display:none;');
     ImageLoader.appendChild(elem3);
+    const elem4=document.createElement('img');
+    elem4.setAttribute('src','/static/ink.png');
+    elem4.setAttribute('id','ink');
+    elem4.setAttribute('style','display:none;');
+    ImageLoader.appendChild(elem4);
 
     console.log('all image loaded');
 }
 
-function draw_card(canvas_name,context,card){
+// function draw_card(canvas_name,context,card){
+//     var canvas_id=CanvasNametoId[canvas_name];
+//     if(canvas_id==yourid){
+//         if(card.mark=='joker'){
+//             const CardImage=document.getElementById('joker');
+//             context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+//         }else{
+//             const CardImage=document.getElementById(card.mark+'-'+String(card.number));
+//             context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+//         }
+//     }else{
+//         const CardImage=document.getElementById('back');
+//         context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+//     }
+// }
+
+function draw_card(canvas_name,context,ink_ctx,card){
     var canvas_id=CanvasNametoId[canvas_name];
+    context.globalCompositeOperation='source-over';
     if(canvas_id==yourid){
         if(card.mark=='joker'){
             const CardImage=document.getElementById('joker');
-            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+            ink_ctx.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
         }else{
             const CardImage=document.getElementById(card.mark+'-'+String(card.number));
-            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+            ink_ctx.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
         }
     }else{
-        const CardImage=document.getElementById('back');
-        context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+        if(card.inkoffset.x){
+            // console.log('inkoffset');
+            // console.log(card.inkoffset);
+            console.log('canvasscale'+canvas_scale_list[canvas_id]);
+            var CardImage=document.getElementById(card.mark+'-'+String(card.number));
+            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+            const inkImage=document.getElementById('ink');
+            context.globalCompositeOperation='destination-in';
+            context.drawImage(inkImage,0,0,inkImage.width,inkImage.height,(card.position.x-card.inkoffset.x-inkHW/2)*canvas_scale_list[canvas_id],(card.position.y-card.inkoffset.y-inkHW/2)*canvas_scale_list[canvas_id],inkHW*canvas_scale_list[canvas_id],inkHW*canvas_scale_list[canvas_id]);
+            context.globalCompositeOperation='destination-over';
+            CardImage=document.getElementById('back');
+            context.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+            const cpcanvas=document.getElementById(CanvasIdtoName[canvas_id]);
+            var image = context.getImageData(0, 0, cpcanvas.width, cpcanvas.height);
+            console.log(image);
+            ink_ctx.putImageData(image,0,0,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+
+        }else{
+            const CardImage=document.getElementById('back');
+            ink_ctx.drawImage(CardImage,card.position.x*canvas_scale_list[canvas_id],card.position.y*canvas_scale_list[canvas_id],TrumpWidth*canvas_scale_list[canvas_id],TrumpHeight*canvas_scale_list[canvas_id]);
+        }
     }
 }
 
-function choose_card(event){
+function choose_or_paint_card(event){
     console.log('スタートフラッグが0?');
     if(startflag==0){return;}
+    if(inkFlag==1){chooseInkArea(event); return;}
     var canvasrect = this.canvas.getBoundingClientRect();
-    const x=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
-    const y=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
+    const x=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
+    const y=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
     var pull_player=player_list[yourid];
-    var pulled_player=player_list[CanvasNametoId[this.canvas.id]];
+    var pulled_player=player_list[InkCanvasNametoId[this.canvas.id]];
     console.log('x'+x);
     console.log('y'+y);
-    console.log('canvasnametoid'+CanvasNametoId[this.canvas.id]);
+    console.log('canvasnametoid'+InkCanvasNametoId[this.canvas.id]);
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         var pulled_card=null;
         var pulled_card_idx=null;
@@ -206,9 +272,9 @@ function move_card(event){
     if(startflag==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
-    var x=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
-    var y=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[this.canvas.id]];
-    var moved_player=player_list[CanvasNametoId[canvas.id]];
+    var x=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
+    var y=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[this.canvas.id]];
+    var moved_player=player_list[InkCanvasNametoId[canvas.id]];
     var moved_card=null;
     var moved_card_idx=null;
     if(moved_player.status=='pulled' && player_list[yourid].status=='pulled' || moved_player.status=='normal1' && player_list[yourid].status=='normal1'|| moved_player.status=='normal2' && player_list[yourid].status=='normal2'|| moved_player.status=='pull' && player_list[yourid].status=='pull'){//変更
@@ -225,8 +291,8 @@ function move_card(event){
         canvas.addEventListener("mouseleave", mup, false);
     }
     function mmove(event){
-        const mx=(event.clientX-canvasrect.left)/canvas_scale_list[CanvasNametoId[canvas.id]];
-        const my=(event.clientY-canvasrect.top)/canvas_scale_list[CanvasNametoId[canvas.id]];
+        const mx=(event.clientX-canvasrect.left)/canvas_scale_list[InkCanvasNametoId[canvas.id]];
+        const my=(event.clientY-canvasrect.top)/canvas_scale_list[InkCanvasNametoId[canvas.id]];
         let xoffset=mx-x;
         let yoffset=my-y;
         moved_card.position.x += xoffset;
@@ -254,7 +320,7 @@ function move_cursor(event){
     var x=event.clientX-canvasrect.left;
     var y=event.clientY-canvasrect.top;
     var pull_player=player_list[yourid];
-    var pulled_player=player_list[CanvasNametoId[canvas.id]];
+    var pulled_player=player_list[InkCanvasNametoId[canvas.id]];
 
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         socket.emit('cursor',canvas.id,x,y);
@@ -288,10 +354,10 @@ socket.on('started',(player_num)=>{
         msg.zIndex=-1;
     });
     for(var i=1;i<=player_num;i++){
-        const canvas=document.getElementById(CanvasIdtoName[i]);
+        const canvas=document.getElementById(InkCanvasIdtoName[i]);
         if(!eventlistener_exist[i]){
             canvas.addEventListener('click',{
-                handleEvent:choose_card,
+                handleEvent:choose_or_paint_card,
                 canvas:canvas
             });
             canvas.addEventListener('mousedown',{
@@ -334,8 +400,10 @@ socket.on('pushed',()=>{
 socket.on('distributed',(players)=>{
     console.log('Shuffled and Distributed cards');
     Object.values(players).forEach((player,idx)=>{
-            const canvas=document.getElementById('canvas'+String(player.id));
+            const canvas=document.getElementById(CanvasIdtoName[player.id]);
+            const inkCanvas=document.getElementById(InkCanvasIdtoName[player.id]);
             const context=canvas.getContext('2d');
+            const ink_ctx=inkCanvas.getContext('2d');
             var cardlist;
             context.clearRect(0, 0, canvas.width, canvas.height);
             if(player.id==yourid){
@@ -349,7 +417,7 @@ socket.on('distributed',(players)=>{
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
-                draw_card(canvas.id,context,card);
+                draw_card(canvas.id,context,ink_ctx,card);
             });
     });
 });
@@ -363,13 +431,16 @@ socket.on('finish',()=>{
 
 socket.on('location', (players,cursor) => {
     player_list=players;
-    //console.log(players);
+    // console.log(players);
     Object.values(players).forEach((player,idx)=>{
         if(player.status=='pulled' || player.status=='pull'||player.status=='normal1'|| player.status=='normal2'){//変更
-            const canvas=document.getElementById('canvas'+String(player.id));
+            const canvas=document.getElementById(CanvasIdtoName[player.id]);
+            const inkCanvas=document.getElementById(InkCanvasIdtoName[player.id]);
             const context=canvas.getContext('2d');
+            const ink_ctx=inkCanvas.getContext('2d');
             var cardlist;
             context.clearRect(0, 0, canvas.width, canvas.height);
+            ink_ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(player.id==yourid){
                 context.strokeStyle = "#990000";
                 cardlist=player.cardlist;
@@ -382,7 +453,7 @@ socket.on('location', (players,cursor) => {
             cardlist.forEach((card)=>{
                 const mark=card.mark;
                 const number=card.number;
-                draw_card(canvas.id,context,card);
+                draw_card(canvas.id,context,ink_ctx,card);
             });
             if(player.status=='pulled' && cursor.x!=null && cursor!=null){
                 const CursorImage=document.getElementById('cursor');
