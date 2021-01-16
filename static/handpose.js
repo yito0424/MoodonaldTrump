@@ -21,11 +21,11 @@ async function detect(net){
     const hand =await net.estimateHands(video);
     // console.log(hand);
     if(hand.length>0){
-        console.log("検出あり");
+        // console.log("検出あり");
         OpenCloseJudger(hand);
     }else{
         hand_not_exist_times+=1;
-        console.log("検出なし");
+        // console.log("検出なし");
         if(hand_not_exist_times>=4){
             //カードをリリース
             if(moved_card!=null){

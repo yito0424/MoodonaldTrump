@@ -239,7 +239,7 @@ io.on('connection',function(socket){
             io.to(roomid).emit('location',roomObject.player_list,roomObject.cursor);
           }
         });
-      },1000/30);
+      },1000/60);
     });     
     //カードが引かれたとき
     socket.on('pull',(pull_player_id,pulled_card,pulled_card_idx)=>{
