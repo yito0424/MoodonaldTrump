@@ -278,15 +278,14 @@ async function skyway_main() {
       socket.removeAllListeners('disconnected');
       room.close();
       close_myself();
-      yourid=-9999;
+      peer.destroy();      
   });
     socket.on('leaved-after-finish',()=>{
       console.log('leaved-after-finish is detected in skyway.js');
       socket.removeAllListeners('leaved-after-finish');
       room.close();
       close_myself();
-      yourid=-9999;
-      
+      peer.destroy();      
   });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
