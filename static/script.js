@@ -407,9 +407,17 @@ function move_card(event){
         });
     }
     if(moved_card!=null){
+        socket.emit('move',yourid,moved_card,moved_card_idx);
+        moved_card_idx=moved_player.cardlist.length-1
         canvas.addEventListener("mousemove", mmove, false);
         canvas.addEventListener("mouseup", mup, false);
         canvas.addEventListener("mouseleave", mup, false);
+        // ホールド中のカードが引かれたときの処理
+        socket.once('held-card-pulled',()=>{
+            canvas.removeEventListener("mousemove", mmove, false);
+            canvas.removeEventListener("mouseup", mup, false);
+            canvas.removeEventListener("mouseleave", mup, false);
+        })
     }
     function mmove(event){
         const mx=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]];
@@ -431,7 +439,7 @@ function move_card(event){
     function mup(event){
         canvas.removeEventListener("mousemove", mmove, false);
         canvas.removeEventListener("mouseup", mup, false);
-        canvas.addEventListener("mouseleave", mup, false);
+        canvas.removeEventListener("mouseleave", mup, false);
     }
 }
 

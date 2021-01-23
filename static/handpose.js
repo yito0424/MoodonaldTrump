@@ -153,6 +153,15 @@ function grip_card(center){
     if(moved_card!=null){
         console.log("つかんだ");
         card_hold_flag=1;
+        socket.emit('move',yourid,moved_card,moved_card_idx);
+        moved_card_idx=moved_player.cardlist.length-1
+        // ホールド中のカードが引かれたときの処理
+        socket.once('held-card-pulled',()=>{
+            moved_card=null;
+            moved_card_idx=null;
+            hand_not_exist_times=0;
+            card_hold_flag=0;
+        })
     }
 }
 
