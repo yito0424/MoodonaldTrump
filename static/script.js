@@ -1,22 +1,30 @@
 'use strict';
 
 const socket = io();
+// 各プレーヤーのトランプのフィールド
 const canvas1 = document.getElementById('canvas1');
 const canvas2 = document.getElementById('canvas2');
 const canvas3 = document.getElementById('canvas3');
 const canvas4 = document.getElementById('canvas4');
+// 各プレーヤーのキャンバスのスケール（ウィンドウやビデオのサイズに合わせて調整）
 var canvas_scale_list={};
 
 const playerImage = document.getElementById('player-image');
 const ImageLoader=document.getElementById('image-wrapper');
+// 各プレーヤーのカードやステータスの情報を格納
 var player_list={};
+// ゲームがスタートしているかどうか（1ならスタート済）
 var startflag=0;
+// クライアントのプレイヤーID
 var yourid;
 var roomid;
+// 各プレイヤーのキャンバスにイベントリスナーが設定されているか
 var eventlistener_exist=[false,false,false,false];
+// カードの縦横のサイズ（キャンバスの横幅を350としたときのサイズ）
 const TrumpHeight=100;
 const TrumpWidth=68;
 const StartMsg=document.getElementById('start-msg');
+
 const CanvasIdtoName={
     1:'canvas1',
     2:'canvas2',
@@ -79,6 +87,7 @@ const mark={
     4:'person4'
 }
 
+// クライアントのビデオサイズを取得
 function getClientVideoSize(v){
     var orgW = v.videoWidth;
     var orgH = v.videoHeight;
@@ -100,21 +109,23 @@ function getClientVideoSize(v){
     return {height:clientH,width:clientW}
 }
 
-for(var i=1;i<=4;i++){
-    const canvas=document.getElementById(CanvasIdtoName[i]);
-    const video=document.getElementById(PlayerIdtoVideo[i]);
-    // console.log("canvas"+canvas.clientWidth);
-    // console.log("person"+player.clientHeight);
-    // if(canvas.clientWidth*2/3<player.clientHeight*0.85){
-    //     canvas.style.height=player.clientWidth*2/3
-    // }else{
-    //     canvas.style.width=player.clientHeight*0.85*3/2;
-    // }
-    // canvas.width = canvas.getBoundingClientRect().width
-    // canvas.height = canvas.getBoundingClientRect().width*2/3
-}
-var canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
+// 多分いらない
+// for(var i=1;i<=4;i++){
+//     const canvas=document.getElementById(CanvasIdtoName[i]);
+//     const video=document.getElementById(PlayerIdtoVideo[i]);
+//     // console.log("canvas"+canvas.clientWidth);
+//     // console.log("person"+player.clientHeight);
+//     // if(canvas.clientWidth*2/3<player.clientHeight*0.85){
+//     //     canvas.style.height=player.clientWidth*2/3
+//     // }else{
+//     //     canvas.style.width=player.clientHeight*0.85*3/2;
+//     // }
+//     // canvas.width = canvas.getBoundingClientRect().width
+//     // canvas.height = canvas.getBoundingClientRect().width*2/3
+// }
+// var canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
 
+// ウィンドウサイズが変わったとき，各プレイヤーのキャンバススケールを調整
 window.addEventListener("resize",()=>{
     // var p1=document.getElementById("person1");
     // var divtag=document.getElementById("player1");
@@ -173,6 +184,8 @@ window.addEventListener("resize",()=>{
     // canvas_scale=document.getElementById(CanvasIdtoName[1]).getBoundingClientRect().width/450;
 });
 
+// ページ開くのとほぼ同時に実行
+// 変数roomidにルームIDを設定
 function get_query(){
     var result = {};
     if( 1 < window.location.search.length ){
@@ -189,14 +202,17 @@ function get_query(){
     }
 }
 
-
+// get_queryの次に実行
+// 自分が入室したことをサーバに知らせる
 function player_join(rejoin_id=0){  //if rejoin_id==0, it's first time to join
     socket.emit('join',roomid,rejoin_id);
 }
+// 多分使わない
 function player_leave(){  
     socket.emit('leave');
 }
-
+// ページ開くとほぼ同時に実行
+// トランプの画像データを読み込んでおく
 function load_img(){
     for(var mk=1;mk<=4;mk++){
         for(var num=1;num<=13;num++){
@@ -236,7 +252,7 @@ function load_img(){
 
     console.log('all image loaded');
 }
-
+// スキルを使用済みかどうか（1なら使用済み）
 var skill_flag=0;
 
 /*function player_select(){
@@ -276,6 +292,7 @@ var skill_flag=0;
 // hide();
 // 点滅効果を出すために「on」と「off」の状態を450ミリ秒ごとに切り替え
 // 4500ミリ秒後に終了 (5秒未満)
+// 多分使わない
 function specialskill(){
     //if(startflag==0){return;}
 
@@ -299,6 +316,7 @@ function specialskill(){
 //     }
 // }
 
+// 指定されたキャンバスの指定された位置に指定されたカードを描画
 function draw_card(canvas_name,context,ink_ctx,card){
     var canvas_id=CanvasNametoId[canvas_name];
     context.globalCompositeOperation='source-over';
@@ -340,6 +358,8 @@ function draw_card(canvas_name,context,ink_ctx,card){
     }
 }
 
+// カードを引くorインクをかける
+// スキルボタンが押された状態ならインクかける処理を優先 
 function choose_or_paint_card(event){
     console.log('スタートフラッグが0?');
     if(startflag==0){return;}
@@ -368,6 +388,7 @@ function choose_or_paint_card(event){
     }
 }
 
+// カードを移動させる
 function move_card(event){
     if(startflag==0){return;}
     let canvas=this.canvas;
@@ -414,6 +435,7 @@ function move_card(event){
     }
 }
 
+// カーソルに合わせて指を動かす
 function move_cursor(event){
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
@@ -427,6 +449,8 @@ function move_cursor(event){
     }
 }
 
+// カードリストを反転したものを取得
+// 例）[heart5, club3, diamond10,spade7] -> [spade7, diamond10, club3, heart5]
 function getReverseCardList(cardlist){
     var reverselist=[];
     for(var i=cardlist.length-1;i>=0;i--){
@@ -434,16 +458,18 @@ function getReverseCardList(cardlist){
     }
     return reverselist;
 }
-
+// 自分が入室したことがサーバに伝わった
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
     skyway_main().then(HandDetection);
 });
+// プレイヤーの人数が少なくてゲームが始められなかった
 socket.on('reject',()=>{
     StartMsg.innerHTML='There are few people!';
     wait_and_reset(5,1);
 })
+// ゲームがスタートした
 socket.on('started',(player_num)=>{
     startflag=1;
     console.log('1にしました');
@@ -456,6 +482,7 @@ socket.on('started',(player_num)=>{
     for(var i=1;i<=player_num;i++){
         const canvas=document.getElementById(InkOnlyCanvasIdtoName[i]);
         if(!eventlistener_exist[i]){
+            // 諸々のイベントリスナーがまだ設定されていなければ設定する
             canvas.addEventListener('click',{
                 handleEvent:choose_or_paint_card,
                 canvas:canvas
@@ -472,6 +499,7 @@ socket.on('started',(player_num)=>{
         eventlistener_exist[i]=true;
     }
 })
+// 指定された秒数だけ待った後，startflagを0にする
 async function wait_and_reset(sec,reset_flag){
     function wait(sec){
         return new Promise(resolve => setTimeout(resolve, sec*1000));
@@ -484,21 +512,25 @@ async function wait_and_reset(sec,reset_flag){
     StartMsg.innerHTML='Press Space to Start';
 }
 
+// スペースキーでゲームを開始するためのリスナー
 document.addEventListener('keydown', (event) => {
     if(event.keyCode==32 && startflag==0){
         socket.emit('start');
         startflag=1;
         StartMsg.innerHTML='';
     };
+    // 使わない
     socket.emit('push');
 });
-
+// 使わない
 socket.on('pushed',()=>{
     console.log('get return');
 });
 
+// カードが全てのプレイヤーに分配された
 socket.on('distributed',(players)=>{
     console.log('Shuffled and Distributed cards');
+    // 各プレイヤーのキャンバスにカードを描画
     Object.values(players).forEach((player,idx)=>{
             const canvas=document.getElementById(CanvasIdtoName[player.id]);
             const inkCanvas=document.getElementById(InkCanvasIdtoName[player.id]);
@@ -522,6 +554,7 @@ socket.on('distributed',(players)=>{
     });
 });
 
+// ゲームが正常に終了した（勝敗がついた）
 socket.on('finish',()=>{
     StartMsg.innerHTML='Finish!!';
     player_list={};
@@ -531,9 +564,12 @@ socket.on('finish',()=>{
     wait_and_reset(5,1);
 });
 
+// 各プレイヤーの情報およびカーソル位置に関する情報を取得（定期的に送られてくる）
+// (プレイヤーのステータスやカードリストなど)
 socket.on('location', (players,cursor) => {
     player_list=players;
     // console.log(players);
+    // 各プレイヤーのキャンバスにカードを描画
     Object.values(players).forEach((player,idx)=>{
         if(player.status=='pulled' || player.status=='pull'||player.status=='normal1'|| player.status=='normal2'){//変更
             const canvas=document.getElementById(CanvasIdtoName[player.id]);
@@ -557,6 +593,7 @@ socket.on('location', (players,cursor) => {
                 const number=card.number;
                 draw_card(canvas.id,context,ink_ctx,card);
             });
+            // プレイヤーのステータスがpulledならカーソルも描画
             if(player.status=='pulled' && cursor.x!=null && cursor!=null){
                 const CursorImage=document.getElementById('cursor');
                 ink_ctx.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
@@ -565,6 +602,7 @@ socket.on('location', (players,cursor) => {
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
             }
         }
+        // プレイヤーのステータスがwinnerやloserなら勝敗メッセージを表示
         else if(player.status=='winner'){
             const elem=document.getElementById('win-msg'+player.id);
             elem.style.zIndex=1;
@@ -580,10 +618,12 @@ socket.on('location', (players,cursor) => {
     });
 });
 
+// 4人以上のプレイヤーが入室した
 socket.on('over-notice',()=>{
     StartMsg.innerHTML='Over capacity';
 })
 
+// プレイヤーの誰かが接続を切断した
 socket.on('disconnected',()=>{
     console.log("disconnected");
     StartMsg.innerHTML='Someone disconnected';
@@ -593,10 +633,13 @@ socket.on('disconnected',()=>{
     socket.emit('remove-interval');
     wait_and_reset(5,1);
 });
-
+// ゲームが正常終了した後にルームを退室した
 socket.on('leaved-after-finish',()=>{
+    //これまでと同じプレイヤーIDで再入室
     player_join(yourid);
 })
+// 誰かが途中で抜けてゲームが終了し，ルームを退出した
 socket.on('leaved-after-disconnect',()=>{
+    // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
 })

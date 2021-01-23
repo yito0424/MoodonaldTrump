@@ -15,16 +15,23 @@ const mark={
   4:'club',
   5:'joker'
 };
+// トランプのカードの枚数
 const ALL_CARD_NUM=53;
+// プレイヤークラス（1人1人のプレイヤーに対応）
 class Player{
   constructor(id){
+    // プレイヤーが所持するカードのリスト
     this.cardlist=[];
+    // プレイヤーID
     this.id=id;
+    // プレイヤーのステータス
     this.status=null;
+    // プレイヤーの順位
     this.rank=0;
   }
 }
 
+// プレイヤーの追加を排他的に行う（redisの更新不整合を防ぐ）
 function executive_access(socket,redisClient,roomid,playerid=0){
   redisClient.watch(roomid,(watchError)=>{
     if(watchError)throw watchError;
@@ -61,33 +68,43 @@ function executive_access(socket,redisClient,roomid,playerid=0){
     });
   })
 }
-
+// 指定されたプレイヤーのカードリストから，指定されたインデックスのカードを引く
 function pullcard(playerObject,pulled_card_idx){
   playerObject.cardlist.splice(pulled_card_idx,1);
 }
+// 指定されたプレイヤーのカードリストに，指定されたカードを追加する
 function addcard(playerObject,card){
   playerObject.cardlist.push(card);
 }
+// 指定されたプレイヤーに指定されたステータスを設定
 function setstatus(playerObject,status){
   playerObject.status=status;
 }
 
+// カードクラス（1枚1枚のカードに対応）
 class Card{
   constructor(mark,number){
+    // カードのマーク
     this.mark=mark;
+    // カードの数字
     this.number=number;
+    // canvas上でのカードの位置（canvasの横幅を350としたとき）
     this.position={
       x:0,
       y:0
     };
+    // カードにインクがかかっていた場合，インクがかけられた位置から
+    // カードがどのくらい離れているか
     this.inkoffset={
       x:null,
       y:null,
+      // インクをかけたプレイヤーのID
       id:null
     }
   }
 }
 
+// カードをシャッフルして各プレイヤーに配る
 function shuffle_and_distribute(roomObject){
   let all_card=[]
   for(var num=1;num<=13;num++){
@@ -115,16 +132,17 @@ function shuffle_and_distribute(roomObject){
   return all_card;
 }
 
+// カードリスト中の2枚のカードの位置をいれかえる
 function shuffle(array, idx1, idx2) {
   const result = [...array];
   [result[idx1], result[idx2]] = [array[idx2], array[idx1]];
   return result;
 }
-
+// 指定したプレイヤーのカードリストに指定したカードを追加
 function distribute(roomObject,id,card){
   addcard(roomObject.player_list[id],card);
 }
-
+// 指定したカードリストから数字が同じカードのペアを捨てる
 function throw_cards(cardlist){
   var after_cardlist=Array.from(cardlist);
   var redunduncy_checker={};
@@ -142,7 +160,7 @@ function throw_cards(cardlist){
   });
   return after_cardlist;
 }
-
+// クライアントがWebページに接続した
 io.on('connection',function(socket){
   let roomObject;
   var playerid;
@@ -152,7 +170,7 @@ io.on('connection',function(socket){
   let player
   let timer;
   const redisClient=redis.createClient(process.env.REDIS_URL);
-
+  // クライアントから入室の要求が送られてきた
   socket.on('join',(roomid,rejoin_id)=>{
     socket.join(roomid);
     //socket.removeAllListeners('start','pull','move','cursor','disconnect','remove-interval');
@@ -199,8 +217,9 @@ io.on('connection',function(socket){
       });
     }
 
-    //スタート時にリスナーをセット
+    //スタート時にリスナーをセット（pull, move, cursor, shot）
     console.log('リスナーをセット');
+    // ゲームスタートの要求が送られてきた
     socket.on('start',(config)=>{
       redisClient.get(roomid,(_, value) =>{
         roomObject=JSON.parse(value);
@@ -208,30 +227,37 @@ io.on('connection',function(socket){
         player_num=roomObject.player_num;
         winner_num=roomObject.winner_num;
         player_list=roomObject.player_list;
+        // 現時点でのプレイヤーの人数が2人に満たなければゲームをスタートしない
         if(player_num<2){
           io.to(roomid).emit('reject');
           return;
         }
         shuffle_and_distribute(roomObject);
+        // 分配されたカードで既に数が揃っているものがあれば捨てておく
         Object.values(player_list).forEach((player)=>{
           console.log('player Changed');
           player.cardlist=throw_cards(player.cardlist);
         });
+        // カード分配が終了したことおよび各プレイヤーの初期カード情報を
+        // クライアントに伝える
         io.to(roomid).emit('distributed',player_list);
-    
+        // 各プレイヤーの初期ステータスを設定
         for(var i=1;i<=player_num;i++){
           if(i==1){ player_list[i].status='pulled';}
           else if(i==2){ player_list[i].status='pull';}
           else if(i==3){ player_list[i].status='normal1';}//変更
           else{ player_list[i].status='normal2';}
         }
+        // ゲームがスタートしたことをクライアントに伝える
         io.to(roomid).emit('started',player_num);
+        // 使わない
         socket.on('push',()=>{
           io.sockets.emit('pushed');
         });
         redisClient.set(roomid, JSON.stringify(roomObject));  
       });
-
+      // 定期的に各プレイヤーのカードリストとカーソルの位置情報を
+      // クライアントに伝えるためのインターバルを設定
       timer=setInterval(()=>{
         redisClient.get(roomid,(error,value)=>{
           roomObject=JSON.parse(value);
@@ -255,17 +281,21 @@ io.on('connection',function(socket){
         cursor=roomObject.cursor;
         cursor.x=null;
         cursor.y=null;
-
+        // カードを引かれるプレイヤーのIDを変数に格納
         Object.values(player_list).forEach((player)=>{
           if(player.status=='pulled'){
             pulled_player_id=player.id;
           }
         });
+        // カードを引く
         pullcard(player_list[pulled_player_id],pulled_card_idx);
+        // 引いたカードを手札に追加
         addcard(player_list[pull_player_id],pulled_card);
+        // 数字が揃ったらカードを捨てる
         player_list[pull_player_id].cardlist=throw_cards(player_list[pull_player_id].cardlist);
         io.to(roomid).emit('location',player_list,cursor);
         //check and set status winner
+        // カードリストが空になったらプレイヤーのステータスをwinnerに変更
         if(player_list[pulled_player_id].cardlist.length==0){
           roomObject.winner_num++;
           player_list[pulled_player_id].status='winner';
@@ -276,7 +306,7 @@ io.on('connection',function(socket){
           player_list[pull_player_id].status='winner';
           player_list[pull_player_id].rank=roomObject.winner_num;
         }
-
+        // 勝者が出たことによる各プレイヤーのステータス調整
         if(roomObject.winner_num<player_num-1){
           var count=0;
           for(var i=0;i<player_num;i++){
@@ -298,6 +328,7 @@ io.on('connection',function(socket){
           }
           redisClient.set(roomid, JSON.stringify(roomObject));
         }else{
+          // 完全に勝敗がついた
           for(var i=1;i<=player_num;i++){
             if(player_list[(pulled_player_id+i)%player_num+1].status!='winner'){
               player_list[(pulled_player_id+i)%player_num+1].status='loser';
@@ -308,6 +339,7 @@ io.on('connection',function(socket){
             clearInterval(timer);
             console.log('インターバルをクリア');
           }
+          // ルームの情報を初期化
           roomObject.player_list={};
           roomObject.playerid=0;
           roomObject.player_num=0;
@@ -315,6 +347,8 @@ io.on('connection',function(socket){
           redisClient.set(roomid, JSON.stringify(roomObject));
           
           var leaved_socket_list=[];
+          // 各プレイヤーを一度ルームから退出させる
+          // リスナーも一旦全部クリア
           Object.values(io.to(roomid).sockets).forEach((socket)=>{
             if(socket.rooms[roomid]){
               socket.removeAllListeners('start');
@@ -329,6 +363,7 @@ io.on('connection',function(socket){
               leaved_socket_list.push(socket);
             }
           });
+          // 正常にゲームが終了し，退出処理がおこなわれたことを通知
           leaved_socket_list.forEach((socket)=>{
             socket.emit('leaved-after-finish');
           })
@@ -388,6 +423,7 @@ io.on('connection',function(socket){
       });
     })
 
+    // 誰かがサーバとの接続を切断したとき
     socket.on('disconnect',()=>{
       if(timer){
         clearInterval(timer);
@@ -396,6 +432,8 @@ io.on('connection',function(socket){
       redisClient.del(roomid);
 
       var leaved_socket_list=[]
+      // 各プレイヤーを一度ルームから退出させる
+      // リスナーも一旦全部クリア
       Object.values(io.to(roomid).sockets).forEach((socket)=>{
         console.log("removeする？");
         if(socket.rooms[roomid]){
@@ -412,6 +450,7 @@ io.on('connection',function(socket){
           leaved_socket_list.push(socket);
         }
       });
+      // 誰かが途中で抜けてゲームが終了し，ルームを退出したことを通知
       leaved_socket_list.forEach((socket)=>{
         socket.emit('leaved-after-disconnect');
       })
