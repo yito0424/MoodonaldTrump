@@ -636,7 +636,7 @@ socket.on('disconnected',()=>{
 // ゲームが正常終了した後にルームを退室した
 socket.on('leaved-after-finish',()=>{
     //これまでと同じプレイヤーIDで再入室
-    player_join(yourid);
+    var timer =setInterval(()=>{player_join(yourid);},1000);
 })
 // 誰かが途中で抜けてゲームが終了し，ルームを退出した
 socket.on('leaved-after-disconnect',()=>{

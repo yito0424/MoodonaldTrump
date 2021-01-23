@@ -286,6 +286,7 @@ async function skyway_main() {
       room.close();
       close_myself();
       yourid=-9999;
+      
   });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
