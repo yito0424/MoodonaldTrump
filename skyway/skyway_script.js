@@ -279,16 +279,17 @@ async function skyway_main() {
       console.log('socket disconnection is detected in skyway.js');
       socket.removeAllListeners('disconnected');
       room.close();
+      peer.destroy();
       close_myself();
-      yourid=-9999;
+      // yourid=-9999;
   });
-    socket.on('leaved-after-finish',()=>{
-      console.log('leaved-after-finish is detected in skyway.js');
-      socket.removeAllListeners('leaved-after-finish');
-      room.close();
-      close_myself();
-      yourid=-9999;
-  });
+  //   socket.on('leaved-after-finish',()=>{
+  //     console.log('leaved-after-finish is detected in skyway.js');
+  //     socket.removeAllListeners('leaved-after-finish');
+  //     room.close();
+  //     close_myself();
+  //     yourid=-9999;
+  // });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
