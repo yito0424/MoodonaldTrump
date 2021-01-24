@@ -169,6 +169,7 @@ io.on('connection',function(socket){
   let player_list;
   let player
   let timer;
+
   const redisClient=redis.createClient(process.env.REDIS_URL);
   // クライアントから入室の要求が送られてきた
   socket.on('join',(roomid,rejoin_id)=>{
@@ -375,6 +376,11 @@ io.on('connection',function(socket){
     socket.on('move',(pulled_player_id,moved_card,moved_card_idx)=>{
       redisClient.get(roomid,(_,value)=>{
         roomObject=JSON.parse(value);
+        if(moved_card_idx >= roomObject.player_list[pulled_player_id].cardlist.length){
+          // カードをホールドしている最中にそのカードが引かれた
+          socket.emit('held-card-pulled');
+          return;
+        }
         pullcard(roomObject.player_list[pulled_player_id],moved_card_idx);
         addcard(roomObject.player_list[pulled_player_id],moved_card);
         redisClient.set(roomid, JSON.stringify(roomObject));

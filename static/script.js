@@ -15,6 +15,8 @@ const ImageLoader=document.getElementById('image-wrapper');
 var player_list={};
 // ゲームがスタートしているかどうか（1ならスタート済）
 var startflag=0;
+// skyway再接続
+var skyway_reconnect = true;
 // クライアントのプレイヤーID
 var yourid;
 var roomid;
@@ -462,7 +464,9 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
-    skyway_main().then(HandDetection);
+    if(skyway_reconnect){
+        skyway_main().then(HandDetection);
+    }
 });
 // プレイヤーの人数が少なくてゲームが始められなかった
 socket.on('reject',()=>{
@@ -635,12 +639,21 @@ socket.on('disconnected',()=>{
 });
 // ゲームが正常終了した後にルームを退室した
 socket.on('leaved-after-finish',()=>{
+    // 入室後にskywayに再接続するかどうか
+    skyway_reconnect = false;
     //これまでと同じプレイヤーIDで再入室
     player_join(yourid);
     
 })
 // 誰かが途中で抜けてゲームが終了し，ルームを退出した
 socket.on('leaved-after-disconnect',()=>{
+    // 入室後にskywayに再接続するかどうか
+    skyway_reconnect = true;
+    // 手検出のインターバルをクリア
+    if(detect_interval){
+        console.log('手検出を停止');
+        clearInterval(detect_interval);
+    }
     // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
 })
