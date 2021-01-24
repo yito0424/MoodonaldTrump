@@ -6,13 +6,14 @@ var card_hold_flag=0;
 var moved_card=null;
 var moved_card_idx=null;
 var myCanvas;
+var detect_interval;
 
 async function HandDetection(){
     video=document.getElementById(PlayerIdtoVideo[yourid]);
     myCanvas=document.getElementById(CanvasIdtoName[yourid]);
     const net=await handpose.load();
     console.log("loaded");
-    setInterval(()=>{
+    detect_interval = setInterval(()=>{
         detect(net);
     },100);
 }

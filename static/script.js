@@ -648,6 +648,11 @@ socket.on('leaved-after-finish',()=>{
 socket.on('leaved-after-disconnect',()=>{
     // 入室後にskywayに再接続するかどうか
     skyway_reconnect = true;
+    // 手検出のインターバルをクリア
+    if(detect_interval){
+        console.log('手検出を停止');
+        clearInterval(detect_interval);
+    }
     // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
 })
