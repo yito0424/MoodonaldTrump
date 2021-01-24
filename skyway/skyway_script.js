@@ -280,13 +280,6 @@ async function skyway_main() {
       close_myself();
       peer.destroy();      
   });
-    socket.on('leaved-after-finish',()=>{
-      console.log('leaved-after-finish is detected in skyway.js');
-      socket.removeAllListeners('leaved-after-finish');
-      room.close();
-      close_myself();
-      peer.destroy();      
-  });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
