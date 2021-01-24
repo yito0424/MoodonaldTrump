@@ -44,7 +44,6 @@ async function skyway_main() {
   const audioMuteTriger = document.getElementById('audio_mute_trigger');
   const videoMuteTriger = document.getElementById('video_mute_trigger');
 
-  var count_stream=-1;
   const num_person = 4;
   const person_array=[];
   for (  var i = 1;  i <= num_person;  i++  ) {
@@ -76,7 +75,7 @@ async function skyway_main() {
       }
     });
 
-  console.log('your id is gotten',yourid);
+  console.log('your id is',yourid);
   
   // 自分のビデオを映す
   person_array[yourid-1].muted = true;
@@ -124,7 +123,7 @@ async function skyway_main() {
   }
 
   // eslint-disable-next-line require-atomic-updates
-  const peer = (window.peer = new Peer({
+  const peer = (window.peer = new Peer(yourid,{
     key: window.__SKYWAY_KEY__,
     debug: 1,
   }));
@@ -155,19 +154,18 @@ async function skyway_main() {
 
     // Render remote stream for new peer join in the room
     room.on('stream', async stream => {
-      count_stream++;
-      if (count_stream%num_person==yourid-1){count_stream++;}
-      count_stream=count_stream%num_person;
-      console.log('count_stream:',count_stream);
-      person_array[count_stream].srcObject = stream;
-      person_array[count_stream].playsInline = true;
-      person_array[count_stream].setAttribute('data-peer-id', stream.peerId);
-      await person_array[count_stream].play().catch(console.error);
+      var stream_index;
+      console.log('get peer id is '+stream.peerId);
+      stream_index=stream.peerId-1
+      person_array[stream_index].srcObject = stream;
+      person_array[stream_index].playsInline = true;
+      person_array[stream_index].setAttribute('data-peer-id', stream.peerId);
+      await person_array[stream_index].play().catch(console.error);
       //ビデオサイズに合わせてキャンバスサイズを調整
-      const canvas=document.getElementById(CanvasIdtoName[count_stream+1]);
-      const inkCanvas=document.getElementById(InkCanvasIdtoName[count_stream+1]);
-      const inkOnlyCanvas=document.getElementById(InkOnlyCanvasIdtoName[count_stream+1]);
-      const video=person_array[count_stream];
+      const canvas=document.getElementById(CanvasIdtoName[stream_index+1]);
+      const inkCanvas=document.getElementById(InkCanvasIdtoName[stream_index+1]);
+      const inkOnlyCanvas=document.getElementById(InkOnlyCanvasIdtoName[stream_index+1]);
+      const video=person_array[stream_index];
       // console.log("canvas"+canvas.clientWidth);
       // console.log("person"+player.clientHeight);
       if(!video.paused){
@@ -202,7 +200,7 @@ async function skyway_main() {
               inkOnlyCanvas.width=vw;
               inkOnlyCanvas.height=vw/1.5;
           }
-          canvas_scale_list[count_stream+1]=vw/450;
+          canvas_scale_list[stream_index+1]=vw/450;
     }
     });
 
@@ -279,17 +277,9 @@ async function skyway_main() {
       console.log('socket disconnection is detected in skyway.js');
       socket.removeAllListeners('disconnected');
       room.close();
-      peer.destroy();
       close_myself();
-      // yourid=-9999;
+      peer.destroy();      
   });
-  //   socket.on('leaved-after-finish',()=>{
-  //     console.log('leaved-after-finish is detected in skyway.js');
-  //     socket.removeAllListeners('leaved-after-finish');
-  //     room.close();
-  //     close_myself();
-  //     yourid=-9999;
-  // });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
