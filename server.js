@@ -160,6 +160,10 @@ function throw_cards(cardlist){
   });
   return after_cardlist;
 }
+
+function get_room_key_hash(roomid, key){
+  return roomid+':'+key;
+}
 // クライアントがWebページに接続した
 io.on('connection',function(socket){
   let roomObject;
@@ -171,6 +175,29 @@ io.on('connection',function(socket){
   let timer;
 
   const redisClient=redis.createClient(process.env.REDIS_URL);
+  // redisClient.del("sampleid");
+  // const player1=new Player(1);
+  // redisClient.hset("sampleid","player1",JSON.stringify(player1));
+  // const player2=new Player(2);
+  // redisClient.hset("sampleid","player2",JSON.stringify(player2),()=>{
+  //   redisClient.hgetall("sampleid",(err,values)=>{
+  //     console.log("sampleidの全ての要素："+values.player1+values.player2);
+  //     redisClient.watch("sampleid","player1",(watchError)=>{
+  //       const anotherClient=redis.createClient(process.env.REDIS_URL);
+  //       anotherClient.hget("sampleid","player2",(err,result)=>{
+  //         redisClient.multi()
+  //         .hset("sampleid","player1","変更したぜ")
+  //         .exec((error,result)=>{
+  //           console.log("exec_result"+result);
+  //           console.log("error"+error);
+  //           redisClient.hgetall("sampleid",(err,value)=>{
+  //             console.log(value);
+  //           })
+  //         })
+  //       });
+  //     })
+  //   })
+  // });
   // クライアントから入室の要求が送られてきた
   socket.on('join',(roomid,rejoin_id)=>{
     socket.join(roomid);
