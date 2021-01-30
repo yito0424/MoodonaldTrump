@@ -381,9 +381,12 @@ io.on('connection',function(socket){
           socket.emit('held-card-pulled');
           return;
         }
-        pullcard(roomObject.player_list[pulled_player_id],moved_card_idx);
-        addcard(roomObject.player_list[pulled_player_id],moved_card);
-        redisClient.set(roomid, JSON.stringify(roomObject));
+        if(roomObject.player_list[pulled_player_id].cardlist[moved_card_idx].mark == moved_card.mark &&
+          roomObject.player_list[pulled_player_id].cardlist[moved_card_idx].number == moved_card.number){
+            pullcard(roomObject.player_list[pulled_player_id],moved_card_idx);
+            addcard(roomObject.player_list[pulled_player_id],moved_card);
+            redisClient.set(roomid, JSON.stringify(roomObject));
+          }
       });
     });
     //キャンバス上にカーソルがきたとき
