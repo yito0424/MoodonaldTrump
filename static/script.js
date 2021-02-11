@@ -383,7 +383,7 @@ function choose_or_paint_card(event){
             }
         });
         if(pulled_card==null){return;}
-        socket.emit('pull',yourid,pulled_card,pulled_card_idx);
+        socket.emit('pull',yourid,pulled_player.id,pulled_card,pulled_card_idx);
         console.log('pullしました');
     }
 }
