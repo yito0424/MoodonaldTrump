@@ -657,3 +657,7 @@ socket.on('leaved-after-disconnect',()=>{
     // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
 })
+//roomidがURLに設定されていない場合
+socket.on('roomid-is-empty',()=>{
+    alert('URLの末尾にルームIDを設定してください');
+})
