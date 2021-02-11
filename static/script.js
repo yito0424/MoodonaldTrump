@@ -15,6 +15,8 @@ const ImageLoader=document.getElementById('image-wrapper');
 var player_list={};
 // ゲームがスタートしているかどうか（1ならスタート済）
 var startflag=0;
+// skyway再接続
+var skyway_reconnect = true;
 // クライアントのプレイヤーID
 var yourid;
 var roomid;
@@ -407,17 +409,9 @@ function move_card(event){
         });
     }
     if(moved_card!=null){
-        socket.emit('move',yourid,moved_card,moved_card_idx);
-        moved_card_idx=moved_player.cardlist.length-1
         canvas.addEventListener("mousemove", mmove, false);
         canvas.addEventListener("mouseup", mup, false);
         canvas.addEventListener("mouseleave", mup, false);
-        // ホールド中のカードが引かれたときの処理
-        socket.once('held-card-pulled',()=>{
-            canvas.removeEventListener("mousemove", mmove, false);
-            canvas.removeEventListener("mouseup", mup, false);
-            canvas.removeEventListener("mouseleave", mup, false);
-        })
     }
     function mmove(event){
         const mx=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]];
@@ -439,7 +433,7 @@ function move_card(event){
     function mup(event){
         canvas.removeEventListener("mousemove", mmove, false);
         canvas.removeEventListener("mouseup", mup, false);
-        canvas.removeEventListener("mouseleave", mup, false);
+        canvas.addEventListener("mouseleave", mup, false);
     }
 }
 
@@ -470,7 +464,9 @@ function getReverseCardList(cardlist){
 socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
-    skyway_main().then(HandDetection);
+    if(skyway_reconnect){
+        skyway_main().then(HandDetection);
+    }
 });
 // プレイヤーの人数が少なくてゲームが始められなかった
 socket.on('reject',()=>{
@@ -643,11 +639,25 @@ socket.on('disconnected',()=>{
 });
 // ゲームが正常終了した後にルームを退室した
 socket.on('leaved-after-finish',()=>{
+    // 入室後にskywayに再接続するかどうか
+    skyway_reconnect = false;
     //これまでと同じプレイヤーIDで再入室
     player_join(yourid);
+    
 })
 // 誰かが途中で抜けてゲームが終了し，ルームを退出した
 socket.on('leaved-after-disconnect',()=>{
+    // 入室後にskywayに再接続するかどうか
+    skyway_reconnect = true;
+    // 手検出のインターバルをクリア
+    if(detect_interval){
+        console.log('手検出を停止');
+        clearInterval(detect_interval);
+    }
     // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
+})
+//roomidがURLに設定されていない場合
+socket.on('roomid-is-empty',()=>{
+    alert('URLの末尾にルームIDを設定してください');
 })

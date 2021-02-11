@@ -227,6 +227,11 @@ io.on('connection',function(socket){
   // });
   // クライアントから入室の要求が送られてきた
   socket.on('join',(roomid,rejoin_id)=>{
+    if(!roomid){
+      socket.emit('roomid-is-empty');
+      socket.disconnect();
+      return;
+    }
     socket.join(roomid);
     //socket.removeAllListeners('start','pull','move','cursor','disconnect','remove-interval');
     console.log('1');
