@@ -6,8 +6,14 @@ var inkCanvasImgList={}
 const SkillMsg=document.getElementById('skill-msg')
 
 
+
 function setInkFlag(){
     if(startflag==0){return;}
+    socket.emit('inkflag');//変更
+}
+
+//インクは一人だけ
+socket.on('can-ink',()=>{
     console.log("インク");
     if(inkFlag!=2){SkillMsg.innerHTML='インクをかけるプレイヤーを選択してください';}
     if(inkFlag==0){
@@ -18,7 +24,11 @@ function setInkFlag(){
         inkFlag=0;
         inkButton.textContent='スキル';
     }
-};
+})
+socket.on('inuse-ink',()=>{
+    SkillMsg.innerHTML='他プレイヤーが使用中';
+    setTimeout(()=>{SkillMsg.innerHTML='';},5000);
+})
 
 function chooseInkArea(event){
     if(inkFlag==0){return;}
