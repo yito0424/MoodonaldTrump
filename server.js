@@ -71,12 +71,15 @@ function executive_access(socket,redisClient,roomid,playerid=0){
 }
 // 指定されたプレイヤーのカードリストから，指定されたインデックスのカードを引く
 function pullcard(playerObject, pulled_card, pulled_card_idx){
-  if(playerObject.cardlist[pulled_card_idx].mark == pulled_card.mark && 
-    playerObject.cardlist[pulled_card_idx].number == pulled_card.number){
+  if(playerObject.cardlist.length <= pulled_card_idx){return 0;}
+  else{
+    if(playerObject.cardlist[pulled_card_idx].mark == pulled_card.mark && 
+      playerObject.cardlist[pulled_card_idx].number == pulled_card.number){
       playerObject.cardlist.splice(pulled_card_idx,1);
       return 1;
-  }else{
-    return 0;
+    }else{
+      return 0;
+    }
   }
 }
 // 指定されたプレイヤーのカードリストに，指定されたカードを追加する
@@ -493,6 +496,7 @@ io.on('connection',function(socket){
                 .exec((error,results)=>{
                   if(results==null){
                     console.log('pullの処理中にデータが更新されました');
+                    throw error;
                   }else{
                     player_id_list = [];
                     var leaved_socket_list=[];
@@ -611,7 +615,7 @@ io.on('connection',function(socket){
                 player_id_data_list.push(JSON.stringify(player_list[idx+1]));
               })
               redisClient.multi()
-              .mset(roomid,JSON.stringify(roomObject))
+              .mset(player_id_data_list)
               .exec((_, results)=>{
                 if(results == null){
                   // リトライの処理
@@ -625,16 +629,45 @@ io.on('connection',function(socket){
     })
 
     //インクがカードにかかったとき
-    socket.on('card_shotted',(shotted_id,shotted_card_list,shotted_card_idx_list)=>{
+    socket.on('card_shotted',function card_shotted(shotted_id,shotted_card_list,shotted_card_idx_list){
       console.log("card_shotted");
-      redisClient.get(get_room_key_hash(roomid, shotted_id),(_,value)=>{
-        var shotted_player=JSON.parse(value);
-        shotted_card_list.forEach((shotted_card,idx)=>{
-          var card_idx=shotted_card_idx_list[idx];
-          shotted_player.cardlist[card_idx]=shotted_card;
-        })
-        redisClient.set(get_room_key_hash(roomid, shotted_id),JSON.stringify(shotted_player));
-      });
+      redisClient.watch(get_room_key_hash(roomid, shotted_id), ()=>{
+        redisClient.get(get_room_key_hash(roomid, shotted_id),(_,value)=>{
+          var shotted_player=JSON.parse(value);
+          shotted_card_list.forEach((shotted_card,idx)=>{
+            var card_idx=shotted_card_idx_list[idx];
+            if(shotted_player.cardlist.length > card_idx){
+              if(shotted_player.cardlist[card_idx].mark ==shotted_card.mark &&
+              shotted_player.cardlist[card_idx].number ==shotted_card.number){
+                shotted_player.cardlist[card_idx].inkoffset=shotted_card.inkoffset;
+              }else{
+                shotted_player.cardlist.forEach((card, idx)=>{
+                  if(card.mark ==shotted_card.mark &&
+                  card.number ==shotted_card.number){
+                    shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+                  }
+                })
+              }
+            }else{
+              shotted_player.cardlist.forEach((card, idx)=>{
+                if(card.mark ==shotted_card.mark &&
+                card.number ==shotted_card.number){
+                  shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+                }
+              })
+            }
+          })
+          redisClient.multi()
+          .set(get_room_key_hash(roomid, shotted_id),JSON.stringify(shotted_player))
+          .exec((_,results)=>{
+            if(results == null){
+              console.log("card_shottedの処理中にデータが更新されました")
+              // リトライ
+              card_shotted(shotted_id,shotted_card_list,shotted_card_idx_list)
+            }
+          })
+        });
+      })
     })
 
     // 誰かがサーバとの接続を切断したとき
@@ -666,6 +699,8 @@ io.on('connection',function(socket){
             leaved_socket_list.push(socket);
           }
         });
+        // redisとの接続を切断
+        redisClient.quit();
         // 誰かが途中で抜けてゲームが終了し，ルームを退出したことを通知
         leaved_socket_list.forEach((socket)=>{
           socket.emit('leaved-after-disconnect');
