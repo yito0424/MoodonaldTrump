@@ -1,5 +1,4 @@
 const Peer = window.Peer;
-var room_id;
 let video_state=true;
 let audio_state=true;
 
@@ -23,22 +22,6 @@ function wait_sleep_second() {
   })
 }
 
-function get_roomId(){
-  if( 1 < window.location.search.length ){
-      var query = window.location.search.substring( 1 );
-      var parameters = query.split( '&' );
-      if( parameters.length>1){console.log('toomany parameter of GET');}
-      else{
-          var parameter=parameters[0].split('=');
-          var paramName=decodeURIComponent(parameter[0]);
-          var paramValue=decodeURIComponent(parameter[1]);
-          if(paramName=='roomid'){
-            room_id=paramValue;
-            return room_id;
-          }
-      }
-  }
-};
 
 async function skyway_main() {
   const audioMuteTriger = document.getElementById('audio_mute_trigger');
@@ -49,8 +32,6 @@ async function skyway_main() {
   for (  var i = 1;  i <= num_person;  i++  ) {
     person_array.push(document.getElementById('person'+i));
    }
-
-  room_id=get_roomId();
 
   const getRoomModeByHash = 'sfu';
 
@@ -139,7 +120,7 @@ async function skyway_main() {
       return;
     }
     
-    const room = peer.joinRoom(room_id, {
+    const room = peer.joinRoom(roomid, {
       mode: getRoomModeByHash,
       stream: localStream,
     });
