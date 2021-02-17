@@ -9,6 +9,7 @@ const SkillMsg=document.getElementById('skill-msg')
 
 function setInkFlag(){
     if(startflag==0){return;}
+    if(inkFlag==2){return;}
     socket.emit('inkflag');//変更
 }
 
