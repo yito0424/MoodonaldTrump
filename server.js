@@ -435,7 +435,7 @@ io.on('connection',function(socket){
           roomObject.inkFlag=0;//変更
           redisClient.set(roomid,JSON.stringify(roomObject));
         });
-      },20000);
+      },17000);
     })
 
     //インクがカードにかかったとき

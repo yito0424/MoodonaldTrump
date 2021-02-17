@@ -89,6 +89,8 @@ const mark={
     4:'person4'
 }
 
+const roomIdMsg = document.getElementById('room-id-msg');
+
 // クライアントのビデオサイズを取得
 function getClientVideoSize(v){
     var orgW = v.videoWidth;
@@ -189,19 +191,9 @@ window.addEventListener("resize",()=>{
 // ページ開くのとほぼ同時に実行
 // 変数roomidにルームIDを設定
 function get_query(){
-    var result = {};
-    if( 1 < window.location.search.length ){
-        var query = window.location.search.substring( 1 );
-        var parameters = query.split( '&' );
-        if( parameters.length>1){console.log('toomany parameter of GET');}
-        else{
-            var parameter=parameters[0].split('=');
-            var paramName=decodeURIComponent(parameter[0]);
-            var paramValue=decodeURIComponent(parameter[1]);
-            if(paramName=='roomid'){roomid=paramValue;}
-            console.log('roomid'+roomid+'を設定')
-        }
-    }
+    roomid=prompt('部屋名を入力してください。（任意の英数字の文字列）',  '例：room1');
+    roomIdMsg.textContent='Room ID : '+roomid;
+    console.log('roomidに'+roomid+'を設定')
 }
 
 // get_queryの次に実行
