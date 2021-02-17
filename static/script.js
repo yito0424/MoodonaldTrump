@@ -17,8 +17,10 @@ var player_list={};
 var startflag=0;
 // skyway再接続
 var skyway_reconnect = true;
+// skyway_mainのpromiseを格納
+var promise_skyway;
 // クライアントのプレイヤーID
-var yourid;
+var yourid=null;
 var roomid;
 // 各プレイヤーのキャンバスにイベントリスナーが設定されているか
 var eventlistener_exist=[false,false,false,false];
@@ -377,7 +379,7 @@ function choose_or_paint_card(event){
             }
         });
         if(pulled_card==null){return;}
-        socket.emit('pull',yourid,pulled_card,pulled_card_idx);
+        socket.emit('pull',yourid,pulled_player.id,pulled_card,pulled_card_idx);
         console.log('pullしました');
     }
 }
@@ -457,7 +459,7 @@ socket.on('joined',(pid)=>{
     console.log('player '+pid+' Joined');
     yourid=pid;
     if(skyway_reconnect){
-        skyway_main().then(HandDetection);
+        promise_skyway = skyway_main();
     }
 });
 // プレイヤーの人数が少なくてゲームが始められなかった
@@ -469,6 +471,11 @@ socket.on('reject',()=>{
 socket.on('started',(player_num)=>{
     startflag=1;
     console.log('1にしました');
+    if(skyway_reconnect){
+        promise_skyway.then(HandDetection);
+    }else{
+        HandDetection();
+    }
     StartMsg.innerHTML='';
     var win_msg_list=document.getElementsByClassName('win-msg');
     Object.values(win_msg_list).forEach((msg)=>{
@@ -510,7 +517,7 @@ async function wait_and_reset(sec,reset_flag){
 
 // スペースキーでゲームを開始するためのリスナー
 document.addEventListener('keydown', (event) => {
-    if(event.keyCode==32 && startflag==0){
+    if(event.keyCode==32 && startflag==0 && yourid!=null){
         socket.emit('start');
         startflag=1;
         StartMsg.innerHTML='';
@@ -551,12 +558,12 @@ socket.on('distributed',(players)=>{
 });
 
 // ゲームが正常に終了した（勝敗がついた）
-socket.on('finish',()=>{
+socket.on('finish',(players)=>{
     StartMsg.innerHTML='Finish!!';
     player_list={};
     inkFlag=0;
     inkButton.textContent='スキル';
-    socket.emit('remove-interval');
+    socket.emit('remove-interval', players);
     wait_and_reset(5,1);
 });
 
@@ -590,7 +597,7 @@ socket.on('location', (players,cursor) => {
                 draw_card(canvas.id,context,ink_ctx,card);
             });
             // プレイヤーのステータスがpulledならカーソルも描画
-            if(player.status=='pulled' && cursor.x!=null && cursor!=null){
+            if(player.status=='pulled' && cursor.x!=null && cursor.y!=null){
                 const CursorImage=document.getElementById('cursor');
                 ink_ctx.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
             }
@@ -633,6 +640,11 @@ socket.on('disconnected',()=>{
 socket.on('leaved-after-finish',()=>{
     // 入室後にskywayに再接続するかどうか
     skyway_reconnect = false;
+    // 手検出のインターバルをクリア
+    if(detect_interval){
+        console.log('手検出を停止');
+        clearInterval(detect_interval);
+    }
     //これまでと同じプレイヤーIDで再入室
     player_join(yourid);
     
