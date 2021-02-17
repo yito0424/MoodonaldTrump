@@ -185,7 +185,6 @@ io.on('connection',function(socket){
   let player_list;
   let player
   let timer;
-
   const redisClient=redis.createClient(process.env.REDIS_URL);
   // const promise_watch = util.promisify(redisClient.watch).bind(redisClient);
   // const promise_get = util.promisify(redisClient.get).bind(redisClient);
@@ -261,6 +260,7 @@ io.on('connection',function(socket){
             x:null,
             y:null
           }
+          roomObject.inkFlag=0;//変更
           console.log('3');
           redisClient.mset(roomid, JSON.stringify(roomObject), get_room_key_hash(roomid, roomObject.playerid), JSON.stringify(player));
           socket.emit('joined',roomObject.playerid);
@@ -588,6 +588,21 @@ io.on('connection',function(socket){
       })
     });
 
+    //変更インクを使えるのは一人
+    socket.on('inkflag',()=>{
+      redisClient.get(roomid,(_,value)=>{
+        roomObject=JSON.parse(value);
+        if(roomObject.inkFlag==0){
+          roomObject.inkFlag=1;
+          socket.emit('can-ink');
+        }
+        else{
+          socket.emit('inuse-ink')
+        }
+        redisClient.set(roomid,JSON.stringify(roomObject));
+      })
+    })//変更
+
     //インクがとばされたとき
     socket.on('shot',(shot_id,shotted_id,x,y)=>{
       io.to(roomid).emit('shotted',shot_id,shotted_id,x,y);
@@ -620,7 +635,9 @@ io.on('connection',function(socket){
                 player_id_data_list.push(pid);
                 player_id_data_list.push(JSON.stringify(player_list[idx+1]));
               })
+              roomObject.inkFlag=0;//変更
               redisClient.multi()
+              .set(roomid,JSON.stringify(roomObject))
               .mset(player_id_data_list)
               .exec((_, results)=>{
                 if(results == null){

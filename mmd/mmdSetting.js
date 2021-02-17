@@ -10,7 +10,8 @@ const windowHeight = window.innerHeight;
 const clock = new THREE.Clock();
 
 
-const Pmx = "/mmd/pmx/Miraikomachi_addSemiBone.pmx";
+const Pmx = "/mmd/pmx/IrisV2_Free.pmx";
+
 const MotionObjects = [
   { id: "loop", VmdClip: null, AudioClip: false },
 ];
