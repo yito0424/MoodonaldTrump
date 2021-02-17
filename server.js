@@ -9,6 +9,9 @@ const io = socketIO(server);
 const port=process.env.PORT || 3000
 const util = require('util');
 const { exit } = require('process');
+var basicAuth = require('basic-auth-connect');
+var username = process.env.USER;
+var password = process.env.PASS;
 
 const mark={
   1:'heart',
@@ -747,6 +750,10 @@ io.on('connection',function(socket){
     })
   });
 });
+
+if (username && password) {
+  app.use(basicAuth(username, password));
+}
 
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/skyway', express.static(__dirname + '/skyway'));
