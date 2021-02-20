@@ -285,7 +285,18 @@ io.on('connection',function(socket){
                 //     console.log(results);
                 //   })
                 // })
-                executive_access(socket,redisClient,roomid);
+                redisClient.get(get_room_key_hash(roomid, 1), (_, player)=>{
+                  if(player != null){
+                    // ゲームが始まっていない場合のみplayerとして登録する
+                    if(JSON.parse(player).status == null){
+                      console.log(player);
+                      console.log("プレイヤー登録")
+                      executive_access(socket,redisClient,roomid);
+                    }else{
+                      socket.emit('joined', clients.length)
+                    }
+                  }
+                })
               }
               else{
                 setTimeout(wait_until_room_creation(), 200)
@@ -737,6 +748,7 @@ io.on('connection',function(socket){
 
     });
     socket.on('remove-interval',(players)=>{
+      player_id_list = [];
       if(timer){
         clearInterval(timer);
         console.log('インターバルをクリア');
