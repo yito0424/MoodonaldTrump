@@ -441,7 +441,7 @@ function move_cursor(event){
     var pulled_player=player_list[InkOnlyCanvasNametoId[canvas.id]];
 
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
-        socket.emit('cursor',canvas.id,x,y);
+        socket.emit('cursor',canvas.id,x/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]], y/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]]);
     }
 }
 
@@ -607,7 +607,7 @@ socket.on('location', (players,cursor) => {
             // プレイヤーのステータスがpulledならカーソルも描画
             if(player.status=='pulled' && cursor.x!=null && cursor.y!=null){
                 const CursorImage=document.getElementById('cursor');
-                ink_ctx.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
+                ink_ctx.drawImage(CursorImage,(cursor.x-10)*canvas_scale_list[player.id],cursor.y*canvas_scale_list[player.id],77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
             }
             if(player.status=='pull'){
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
