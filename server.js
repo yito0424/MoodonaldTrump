@@ -188,6 +188,13 @@ io.on('connection',function(socket){
   let player_list;
   let player
   let timer;
+
+  if(socket.client.conn.server.clientsCount > 16){
+    socket.emit('rejected');
+    socket.disconnect();
+    return;
+  }
+
   const redisClient=redis.createClient(process.env.REDIS_URL);
   // const promise_watch = util.promisify(redisClient.watch).bind(redisClient);
   // const promise_get = util.promisify(redisClient.get).bind(redisClient);
@@ -285,7 +292,18 @@ io.on('connection',function(socket){
                 //     console.log(results);
                 //   })
                 // })
-                executive_access(socket,redisClient,roomid);
+                redisClient.get(get_room_key_hash(roomid, 1), (_, player)=>{
+                  if(player != null){
+                    // ゲームが始まっていない場合のみplayerとして登録する
+                    if(JSON.parse(player).status == null){
+                      console.log(player);
+                      console.log("プレイヤー登録")
+                      executive_access(socket,redisClient,roomid);
+                    }else{
+                      socket.emit('joined', clients.length)
+                    }
+                  }
+                })
               }
               else{
                 setTimeout(wait_until_room_creation(), 200)
@@ -737,6 +755,7 @@ io.on('connection',function(socket){
 
     });
     socket.on('remove-interval',(players)=>{
+      player_id_list = [];
       if(timer){
         clearInterval(timer);
         console.log('インターバルをクリア');
