@@ -441,7 +441,7 @@ function move_cursor(event){
     var pulled_player=player_list[InkOnlyCanvasNametoId[canvas.id]];
 
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
-        socket.emit('cursor',canvas.id,x,y);
+        socket.emit('cursor',canvas.id,x/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]], y/canvas_scale_list[InkOnlyCanvasNametoId[canvas.id]]);
     }
 }
 
@@ -502,13 +502,22 @@ socket.on('started',(player_num)=>{
         eventlistener_exist[i]=true;
     }
 })
-// 指定された秒数だけ待った後，startflagを0にする
+// 指定された秒数だけ待った後，キャンバスをクリアし，startflagを0にする
 async function wait_and_reset(sec,reset_flag){
     function wait(sec){
         return new Promise(resolve => setTimeout(resolve, sec*1000));
     }
     await wait(sec);
     if(reset_flag==1){
+        // キャンバスをクリア
+        for(var playerid = 1; playerid <= 4; ++playerid){
+            const canvas=document.getElementById(CanvasIdtoName[playerid]);
+            const inkCanvas=document.getElementById(InkCanvasIdtoName[playerid]);
+            const context=canvas.getContext('2d');
+            const ink_ctx=inkCanvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            ink_ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
         startflag=0;
         console.log('0にしました');
     }
@@ -564,7 +573,6 @@ socket.on('finish',(players)=>{
     inkFlag=0;
     inkButton.textContent='スキル';
     socket.emit('remove-interval', players);
-    wait_and_reset(5,1);
 });
 
 // 各プレイヤーの情報およびカーソル位置に関する情報を取得（定期的に送られてくる）
@@ -599,7 +607,7 @@ socket.on('location', (players,cursor) => {
             // プレイヤーのステータスがpulledならカーソルも描画
             if(player.status=='pulled' && cursor.x!=null && cursor.y!=null){
                 const CursorImage=document.getElementById('cursor');
-                ink_ctx.drawImage(CursorImage,cursor.x-10*canvas_scale_list[player.id],cursor.y,77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
+                ink_ctx.drawImage(CursorImage,(cursor.x-10)*canvas_scale_list[player.id],cursor.y*canvas_scale_list[player.id],77*canvas_scale_list[player.id],105*canvas_scale_list[player.id]);
             }
             if(player.status=='pull'){
                 StartMsg.innerHTML='Player'+player.id+'’s Turn';
@@ -634,7 +642,6 @@ socket.on('disconnected',()=>{
     inkFlag=0;
     inkButton.textContent='必殺技';
     socket.emit('remove-interval');
-    wait_and_reset(5,1);
 });
 // ゲームが正常終了した後にルームを退室した
 socket.on('leaved-after-finish',()=>{
@@ -645,8 +652,13 @@ socket.on('leaved-after-finish',()=>{
         console.log('手検出を停止');
         clearInterval(detect_interval);
     }
+    // youridを一旦リセット
+    const temp_yourid = yourid;
+    yourid = null;
+    // 5秒後にゲームを開始できる状態にする
+    wait_and_reset(5,1);
     //これまでと同じプレイヤーIDで再入室
-    player_join(yourid);
+    player_join(temp_yourid);
     
 })
 // 誰かが途中で抜けてゲームが終了し，ルームを退出した
@@ -658,10 +670,18 @@ socket.on('leaved-after-disconnect',()=>{
         console.log('手検出を停止');
         clearInterval(detect_interval);
     }
+    // youridを一旦リセット
+    yourid = null;
+    // 5秒後にゲームを開始できる状態にする
+    wait_and_reset(5,1);
     // 再入室（プレイヤーIDはサーバ側で動的に割り当て）
     player_join();
 })
 //roomidがURLに設定されていない場合
 socket.on('roomid-is-empty',()=>{
     alert('URLの末尾にルームIDを設定してください');
+})
+//クライアントの同時接続数が16人を超えた
+socket.on('rejected', ()=>{
+    alert('同時に接続可能な人数は16人までです');
 })
