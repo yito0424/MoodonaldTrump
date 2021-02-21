@@ -188,6 +188,13 @@ io.on('connection',function(socket){
   let player_list;
   let player
   let timer;
+
+  if(socket.client.conn.server.clientsCount > 16){
+    socket.emit('rejected');
+    socket.disconnect();
+    return;
+  }
+
   const redisClient=redis.createClient(process.env.REDIS_URL);
   // const promise_watch = util.promisify(redisClient.watch).bind(redisClient);
   // const promise_get = util.promisify(redisClient.get).bind(redisClient);

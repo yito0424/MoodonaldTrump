@@ -681,3 +681,7 @@ socket.on('leaved-after-disconnect',()=>{
 socket.on('roomid-is-empty',()=>{
     alert('URLの末尾にルームIDを設定してください');
 })
+//クライアントの同時接続数が16人を超えた
+socket.on('rejected', ()=>{
+    alert('同時に接続可能な人数は16人までです');
+})
