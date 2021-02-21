@@ -115,6 +115,7 @@ async function skyway_main() {
   // before using methods of peer instance.
   wait_sleep().then(result => {
 
+    console.log("show streams",peer.open);
     if (!peer.open) {
       console.log("peer is not open");
       return;
@@ -137,7 +138,7 @@ async function skyway_main() {
     room.on('stream', async stream => {
       var stream_index;
       console.log('obtained peer id is '+stream.peerId);
-      stream_index=stream.peerId.split('_')[1]-1
+      stream_index=stream.peerId.split('_')[1]-1;
       person_array[stream_index].srcObject = stream;
       person_array[stream_index].playsInline = true;
       person_array[stream_index].setAttribute('data-peer-id', stream.peerId);
@@ -189,14 +190,11 @@ async function skyway_main() {
     room.on('peerLeave', close_room_members);
 
     function close_room_members(peerId){
-      console.log("close_room_members   "+peerId);
       const remoteVideo = person_array.filter(function(value, index, array ) {
-        console.log(value.getAttribute('data-peer-id'));
         if (value.getAttribute('data-peer-id')==peerId && index!=yourid-1){
           return value;
         }
       })[0];
-      console.log(remoteVideo);
       remoteVideo.srcObject.getTracks().forEach(track => track.stop());
       remoteVideo.srcObject = null;
       console.log(`=== ${peerId} left ===\n`);
@@ -217,7 +215,6 @@ async function skyway_main() {
         remoteVideo.srcObject.getTracks().forEach(track => track.stop());
         remoteVideo.cc = null;
       });
-
       // console.log(person_array_remote);
       // Array.from(person_array_remote).forEach(remoteVideo => {
       //   remoteVideo.srcObject.getTracks().forEach(track => track.stop());
@@ -261,9 +258,8 @@ async function skyway_main() {
     socket.on('disconnected',()=>{
       console.log('socket disconnection is detected in skyway.js');
       socket.removeAllListeners('disconnected');
-      // room.close();
+      room.close();
       close_myself();
-      // close_room_members();
       peer.destroy();      
   });
 
