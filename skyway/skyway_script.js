@@ -62,7 +62,6 @@ async function skyway_main() {
   person_array[yourid-1].muted = true;
   person_array[yourid-1].srcObject = localStream;
   person_array[yourid-1].playsInline = true;
-  person_array[yourid-1].setAttribute('data-peer-id', roomid+"_"+yourid);
   await person_array[yourid-1].play().catch(console.error);
 
   //ビデオサイズに合わせてキャンバスサイズを調整
@@ -137,7 +136,7 @@ async function skyway_main() {
     // Render remote stream for new peer join in the room
     room.on('stream', async stream => {
       var stream_index;
-      console.log('obtained peer id is '+stream.peerId);
+      console.log('get peer id is '+stream.peerId);
       stream_index=stream.peerId.split('_')[1]-1;
       person_array[stream_index].srcObject = stream;
       person_array[stream_index].playsInline = true;
