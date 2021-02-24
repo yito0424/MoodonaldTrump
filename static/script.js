@@ -631,6 +631,7 @@ socket.on('location', (players,cursor) => {
 
 // 4人以上のプレイヤーが入室した
 socket.on('over-notice',()=>{
+    alert('ルームの定員を上回っています\n他の方が抜けるまで待つか、別のルームへ入室してください');
     StartMsg.innerHTML='Over capacity';
 })
 
