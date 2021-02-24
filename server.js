@@ -517,6 +517,7 @@ io.on('connection',function(socket){
                 roomObject.playerid=0;
                 roomObject.player_num=0;
                 roomObject.winner_num=0;
+                roomObject.inkFlag=0;
                 redisClient.unwatch(()=>{
                   redisClient
                   .multi()
@@ -610,17 +611,28 @@ io.on('connection',function(socket){
     });
 
     //変更インクを使えるのは一人
-    socket.on('inkflag',()=>{
-      redisClient.get(roomid,(_,value)=>{
-        roomObject=JSON.parse(value);
-        if(roomObject.inkFlag==0){
-          roomObject.inkFlag=1;
-          socket.emit('can-ink');
-        }
-        else{
-          socket.emit('inuse-ink')
-        }
-        redisClient.set(roomid,JSON.stringify(roomObject));
+    socket.on('inkflag',function confirm_ink_flag(){
+      redisClient.watch(()=>{
+        redisClient.get(roomid,(_,value)=>{
+          roomObject=JSON.parse(value);
+          console.log("inkflagは"+roomObject.inkFlag);
+          if(roomObject.inkFlag==0){
+            roomObject.inkFlag=1;
+            socket.emit('can-ink');
+            redisClient.multi()
+            .set(roomid,JSON.stringify(roomObject))
+            .exec((_,result)=>{
+              if(result == null){
+                // データの更新に失敗したら再実行
+                confirm_ink_flag();
+              }
+            })
+          }
+          else{
+            redisClient.unwatch()
+            socket.emit('inuse-ink')
+          }
+        })
       })
     })//変更
 
@@ -675,42 +687,49 @@ io.on('connection',function(socket){
     //インクがカードにかかったとき
     socket.on('card_shotted',function card_shotted(shotted_id,shotted_card_list,shotted_card_idx_list){
       console.log("card_shotted");
-      redisClient.watch(get_room_key_hash(roomid, shotted_id), ()=>{
-        redisClient.get(get_room_key_hash(roomid, shotted_id),(_,value)=>{
-          var shotted_player=JSON.parse(value);
-          shotted_card_list.forEach((shotted_card,idx)=>{
-            var card_idx=shotted_card_idx_list[idx];
-            if(shotted_player.cardlist.length > card_idx){
-              if(shotted_player.cardlist[card_idx].mark ==shotted_card.mark &&
-              shotted_player.cardlist[card_idx].number ==shotted_card.number){
-                shotted_player.cardlist[card_idx].inkoffset=shotted_card.inkoffset;
-              }else{
-                shotted_player.cardlist.forEach((card, idx)=>{
-                  if(card.mark ==shotted_card.mark &&
-                  card.number ==shotted_card.number){
-                    shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+      redisClient.watch(roomid, ()=>{
+        redisClient.get(roomid, (_, value)=>{
+          var roomObject = JSON.parse(value)
+          roomObject.inkFlag = 0;
+          redisClient.watch(get_room_key_hash(roomid, shotted_id), ()=>{
+            redisClient.get(get_room_key_hash(roomid, shotted_id),(_,value)=>{
+              var shotted_player=JSON.parse(value);
+              shotted_card_list.forEach((shotted_card,idx)=>{
+                var card_idx=shotted_card_idx_list[idx];
+                if(shotted_player.cardlist.length > card_idx){
+                  if(shotted_player.cardlist[card_idx].mark ==shotted_card.mark &&
+                  shotted_player.cardlist[card_idx].number ==shotted_card.number){
+                    shotted_player.cardlist[card_idx].inkoffset=shotted_card.inkoffset;
+                  }else{
+                    shotted_player.cardlist.forEach((card, idx)=>{
+                      if(card.mark ==shotted_card.mark &&
+                      card.number ==shotted_card.number){
+                        shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+                      }
+                    })
                   }
-                })
-              }
-            }else{
-              shotted_player.cardlist.forEach((card, idx)=>{
-                if(card.mark ==shotted_card.mark &&
-                card.number ==shotted_card.number){
-                  shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+                }else{
+                  shotted_player.cardlist.forEach((card, idx)=>{
+                    if(card.mark ==shotted_card.mark &&
+                    card.number ==shotted_card.number){
+                      shotted_player.cardlist[idx].inkoffset = shotted_card.inkoffset
+                    }
+                  })
                 }
               })
-            }
+              redisClient.multi()
+              .set(roomid, JSON.stringify(roomObject))
+              .set(get_room_key_hash(roomid, shotted_id),JSON.stringify(shotted_player))
+              .exec((_,results)=>{
+                if(results == null){
+                  console.log("card_shottedの処理中にデータが更新されました")
+                  // リトライ
+                  card_shotted(shotted_id,shotted_card_list,shotted_card_idx_list)
+                }
+              })
+            });
           })
-          redisClient.multi()
-          .set(get_room_key_hash(roomid, shotted_id),JSON.stringify(shotted_player))
-          .exec((_,results)=>{
-            if(results == null){
-              console.log("card_shottedの処理中にデータが更新されました")
-              // リトライ
-              card_shotted(shotted_id,shotted_card_list,shotted_card_idx_list)
-            }
-          })
-        });
+        })
       })
     })
 
@@ -738,6 +757,7 @@ io.on('connection',function(socket){
             socket.removeAllListeners('shot');
             socket.removeAllListeners('card_shotted');
             socket.removeAllListeners('disconnect');
+            socket.removeAllListeners('inkflag');
             socket.emit('disconnected');
             socket.leave(roomid);
             leaved_socket_list.push(socket);
