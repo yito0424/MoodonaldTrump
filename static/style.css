@@ -137,7 +137,7 @@ html{
     transition: .5s;
     background-size: 200%;
     position: relative;
-    margin: 15px;
+    margin: 40px;
     margin-left: 40px;
     z-index: 9999;
 }
@@ -175,3 +175,29 @@ html{
     color: white;
     z-index: 3;
 }
+
+#leave-button{
+    /* background:red;
+    background-color: red;
+    border-color: #daa520;
+    border-radius: 100vh;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    z-index: 9999;
+    margin: 20px; */
+
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    font-size: 16px;
+    color: #FFF;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 24px;
+    border-radius: 20px;
+    background-image: linear-gradient(-90deg, #bd1960,#FF006E);
+    background-size: 200%;
+    position: relative;
+    margin: 40px;
+    z-index: 9999;
+  }
