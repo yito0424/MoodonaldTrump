@@ -609,6 +609,23 @@ io.on('connection',function(socket){
         });
       })
     });
+    //変更0226
+    socket.on('inkreset',()=>{
+      redisClient.watch(()=>{
+        redisClient.get(roomid,(_,value)=>{
+          roomObject=JSON.parse(value);
+          roomObject.inkFlag=0;
+          redisClient.multi()
+          .set(roomid,JSON.stringify(roomObject))
+            .exec((_,result)=>{
+              if(result == null){
+                // データの更新に失敗したら再実行
+                confirm_ink_flag();
+              }
+            })
+        })
+      })
+    })
 
     //変更インクを使えるのは一人
     socket.on('inkflag',function confirm_ink_flag(){
@@ -758,6 +775,7 @@ io.on('connection',function(socket){
             socket.removeAllListeners('card_shotted');
             socket.removeAllListeners('disconnect');
             socket.removeAllListeners('inkflag');
+            socket.removeAllListeners('inkreset');//変更0226
             socket.emit('disconnected');
             socket.leave(roomid);
             leaved_socket_list.push(socket);
