@@ -473,9 +473,7 @@ socket.on('started',(player_num)=>{
     startflag=1;
     console.log('1にしました');
     if(skyway_reconnect){
-        promise_skyway.then(HandDetection);
-    }else{
-        HandDetection();
+        promise_skyway;
     }
     StartMsg.innerHTML='';
     var win_msg_list=document.getElementsByClassName('win-msg');
@@ -653,6 +651,9 @@ socket.on('leaved-after-finish',()=>{
     if(detect_interval){
         console.log('手検出を停止');
         clearInterval(detect_interval);
+        detect_interval = null;
+        HandposeButton.textContent = '手検出：OFF'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));')
     }
     // youridを一旦リセット
     const temp_yourid = yourid;
@@ -671,6 +672,9 @@ socket.on('leaved-after-disconnect',()=>{
     if(detect_interval){
         console.log('手検出を停止');
         clearInterval(detect_interval);
+        detect_interval = null;
+        HandposeButton.textContent = '手検出：OFF'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));')
     }
     // youridを一旦リセット
     yourid = null;
