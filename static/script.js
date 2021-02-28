@@ -433,6 +433,7 @@ function move_card(event){
 
 // カーソルに合わせて指を動かす
 function move_cursor(event){
+    if(Object.keys(player_list).length==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
     var x=event.clientX-canvasrect.left;

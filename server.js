@@ -816,11 +816,13 @@ io.on('connection',function(socket){
           clearInterval(timer);
           console.log('インターバルをクリア');
         }
-        cursor = {
-          x:null,
-          y:null
+        if(players){
+          cursor = {
+            x:null,
+            y:null
+          }
+          socket.emit('location',players,cursor);
         }
-        socket.emit('location',players,cursor);
       })
     }
   });
