@@ -320,6 +320,16 @@ io.on('connection',function(socket){
         }
         else{
           socket.leave(roomid);
+          socket.removeAllListeners('start');
+          socket.removeAllListeners('pull');
+          socket.removeAllListeners('move');
+          socket.removeAllListeners('cursor');
+          socket.removeAllListeners('shot');
+          socket.removeAllListeners('card_shotted');
+          socket.removeAllListeners('disconnect');
+          socket.removeAllListeners('inkflag');
+          socket.removeAllListeners('inkreset');
+          socket.removeAllListeners('remove-interval');
           socket.emit('over-notice');
           return;
         }
