@@ -681,7 +681,7 @@ socket.on('leaved-after-disconnect',()=>{
 })
 //roomidがURLに設定されていない場合
 socket.on('roomid-is-empty',()=>{
-    alert('URLの末尾にルームIDを設定してください');
+    alert('部屋名が設定されていません');
 })
 //クライアントの同時接続数が16人を超えた
 socket.on('rejected', ()=>{
