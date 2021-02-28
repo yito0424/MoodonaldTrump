@@ -10,6 +10,7 @@ const port=process.env.PORT || 3000
 const util = require('util');
 const { exit } = require('process');
 var basicAuth = require('basic-auth-connect');
+const { EventEmitter, listenerCount } = require('events');
 var username = process.env.USER;
 var password = process.env.PASS;
 
@@ -39,36 +40,42 @@ class Player{
 // プレイヤーの追加を排他的に行う（redisの更新不整合を防ぐ）
 function executive_access(socket,redisClient,roomid,playerid=0){
   redisClient.watch(roomid,(watchError)=>{
-    if(watchError)throw watchError;
+    // if(watchError)throw watchError;
     redisClient.get(roomid,(error, value) =>{
-      if(error)throw error;
-      var roomObject=JSON.parse(value);
-      console.log(roomObject);
-      roomObject.playerid++;
-      roomObject.player_num++;
-      var player;
-      if(playerid){
-        player=new Player(playerid);
-      }
-      else{
-        player=new Player(roomObject.playerid);
-        playerid = roomObject.playerid
-      }
-      console.log(roomObject);
-      redisClient
-      .multi()
-      .set(roomid, JSON.stringify(roomObject))
-      .set(get_room_key_hash(roomid, playerid), JSON.stringify(player))
-      .exec((error,results)=>{
-        if(error)throw error;
-        console.log('results='+results);
-        if(results==null){
-          executive_access(socket,redisClient,roomid,playerid);
+      if(error){
+        console.log(error);
+      }else{
+        var roomObject=JSON.parse(value);
+        console.log(roomObject);
+        roomObject.playerid++;
+        roomObject.player_num++;
+        var player;
+        var playerid_temp
+        if(playerid){
+          player=new Player(playerid);
+          playerid_temp = playerid;
         }
         else{
-          socket.emit('joined',playerid);
+          player=new Player(roomObject.playerid);
+          playerid_temp = roomObject.playerid;
         }
-      })
+        console.log(roomObject);
+        redisClient
+        .multi()
+        .set(roomid, JSON.stringify(roomObject))
+        .set(get_room_key_hash(roomid, playerid_temp), JSON.stringify(player))
+        .exec((error,results)=>{
+          if(error)throw error;
+          console.log('results='+results);
+          if(results==null){
+            executive_access(socket,redisClient,roomid,playerid);
+          }
+          else{
+            console.log('playerid'+playerid_temp+"を送ります");
+            socket.emit('joined',playerid_temp);
+          }
+        })
+      }
     });
   })
 }
@@ -609,6 +616,23 @@ io.on('connection',function(socket){
         });
       })
     });
+    //変更0226
+    socket.on('inkreset',()=>{
+      redisClient.watch(()=>{
+        redisClient.get(roomid,(_,value)=>{
+          roomObject=JSON.parse(value);
+          roomObject.inkFlag=0;
+          redisClient.multi()
+          .set(roomid,JSON.stringify(roomObject))
+            .exec((_,result)=>{
+              if(result == null){
+                // データの更新に失敗したら再実行
+                confirm_ink_flag();
+              }
+            })
+        })
+      })
+    })
 
     //変更インクを使えるのは一人
     socket.on('inkflag',function confirm_ink_flag(){
@@ -758,6 +782,7 @@ io.on('connection',function(socket){
             socket.removeAllListeners('card_shotted');
             socket.removeAllListeners('disconnect');
             socket.removeAllListeners('inkflag');
+            socket.removeAllListeners('inkreset');//変更0226
             socket.emit('disconnected');
             socket.leave(roomid);
             leaved_socket_list.push(socket);
@@ -774,19 +799,20 @@ io.on('connection',function(socket){
       })
 
     });
-    socket.on('remove-interval',(players)=>{
-      player_id_list = [];
-      if(timer){
-        clearInterval(timer);
-        console.log('インターバルをクリア');
-      }
-      cursor = {
-        x:null,
-        y:null
-      }
-      socket.emit('location',players,cursor);
-      socket.removeAllListeners('remove-interval');
-    })
+    if(listenerCount(socket, 'remove-interval') == 0){
+      socket.on('remove-interval',(players)=>{
+        player_id_list = [];
+        if(timer){
+          clearInterval(timer);
+          console.log('インターバルをクリア');
+        }
+        cursor = {
+          x:null,
+          y:null
+        }
+        socket.emit('location',players,cursor);
+      })
+    }
   });
 });
 
