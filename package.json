@@ -11,6 +11,8 @@
     "npm": "6.9.x"
   },
   "dependencies": {
+    "basic-auth-connect": "^1.0.0",
+    "events": "^3.3.0",
     "express": "^4.17.1",
     "json-cyclic": "^1.0.2",
     "redis": "^3.0.2",
