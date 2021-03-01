@@ -10,13 +10,22 @@ let detect_interval = null;
 const HandposeButton = document.getElementById('handpose-button');
 var net = null;
 
+async function load_handpose(){
+    net = await handpose.load();
+    console.log("handpose loaded");
+}
+
 async function HandDetection(){
     if(detect_interval != null){return;}
+    if(yourid == null){
+        console.log('youridが無効です');
+        return;
+    }
     video=document.getElementById(PlayerIdtoVideo[yourid]);
     myCanvas=document.getElementById(CanvasIdtoName[yourid]);
     if(net == null){
-        net = await handpose.load();
-        console.log("loaded");
+        console.log('handpose model have not been loaded yet');
+        return;
     }
     detect_interval = setInterval(()=>{
         detect(net);
