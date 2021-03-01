@@ -1,5 +1,9 @@
 
 html{
+    background-color: rgb(14, 21, 34);
+}
+
+.box-wrap{
     background-color:  #004840;
 }
 
@@ -124,21 +128,23 @@ html{
 }
 
 #ink-button {
-    display: inline-block;
+    /* display: table-cell;
+    */
     width: 100px;
-    text-align: center;
+    padding: 8px 24px;
     font-size: 16px;
     color: #FFF;
     text-decoration: none;
     font-weight: bold;
-    padding: 8px 24px;
     border-radius: 20px;
     background-image: linear-gradient(-90deg, #FF006E,#FFD500);
     transition: .5s;
     background-size: 200%;
-    position: relative;
-    margin: 10px 10px 10px 20px;
     z-index: 9999;
+    align-items: center;
+    display: inline-block;
+    margin: auto 10px;
+    margin-left: 20px;
 }
   
 #ink-button:hover {
@@ -146,9 +152,7 @@ html{
 }
 
 #handpose-button {
-    display: inline-block;
-    width: 150px;
-    text-align: center;
+    width: 120px;
     font-size: 16px;
     color: #FFF;
     text-decoration: none;
@@ -158,10 +162,10 @@ html{
     background-image: linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));
     transition: .5s;
     background-size: 200%;
-    position: relative;
-    margin: auto 10px;
     z-index: 9999;
-    margin: auto 40px;
+    align-items: center;
+    display: inline-block;
+    margin: auto 10px;
 }
 
 #handpose-button:hover {
@@ -171,46 +175,39 @@ html{
 #skill-msg{
     font-family: 'Lobster', cursive;
     font-size:20px;
-    position:relative;
-    display:inline-block;
-    width:30%;
+    /* width:30%; */
     color: #daa520;
     z-index: 3;
+    /* margin: 10px; */
+    /* position:relative;
+        */
+        align-items: center;
+        display: inline-block;
+        margin: auto 10px;
 }
 
 .button-bar{
-    position: relative;
-    float:left;
+    /* position: relative;
+    float:left; */
     width: 100%;
     background-color: rgb(14, 21, 34);
-    margin: 0 auto;
-    
+    /* margin: 0 auto; */
+    height: 10%;
+    display: flex;
 }
 
 #room-id-msg{
-    margin: 10px;
+    margin: auto 10px;
     font-family: 'Lobster', cursive;
     font-size:20px;
-    position:relative;
-    display:inline-block;
     color: white;
     z-index: 3;
-
+    display: inline-block;
+    align-items: center;
 }
 
 #leave-button{
-    /* background:red;
-    background-color: red;
-    border-color: #daa520;
-    border-radius: 100vh;
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-    z-index: 9999;
-    margin: 20px; */
-
-    display: inline-block;
-    width: 100px;
-    text-align: center;
+    width: 90px;
     font-size: 16px;
     color: #FFF;
     text-decoration: none;
@@ -219,7 +216,8 @@ html{
     border-radius: 20px;
     background-image: linear-gradient(-90deg, #bd1960,#FF006E);
     background-size: 200%;
-    position: relative;
-    margin: 10px;
     z-index: 9999;
+    align-items: center;
+    margin: auto 10px;
+
   }
