@@ -275,6 +275,9 @@ async function skyway_main() {
       result=window.confirm("本当に退出しますか？");
       if(result){
         room.close();
+        // window.open('about:blank', '_self').close();
+        window.open('/static/leave.html', '_self').close();
+
       }
     }
 
