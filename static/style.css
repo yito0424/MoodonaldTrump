@@ -161,6 +161,7 @@ html{
     position: relative;
     margin: auto 10px;
     z-index: 9999;
+    margin: auto 40px;
 }
 
 #handpose-button:hover {

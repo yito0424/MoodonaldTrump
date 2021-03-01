@@ -50,14 +50,14 @@ async function skyway_main() {
     localStream.getAudioTracks().forEach((track) => {
       if(!audio_state){
         track.enabled = false;
-        audioMuteTriger.textContent="ミュート解除"
+        audioMuteTriger.textContent="音声：OFF"
       }
     });
 
     localStream.getVideoTracks().forEach((track) => {
       if(!video_state){
         track.enabled = false;
-        videoMuteTriger.textContent="ビデオの開始"
+        videoMuteTriger.textContent="ビデオ：OFF"
       }
     });
 
@@ -224,24 +224,6 @@ async function skyway_main() {
         }
       }
       );
-
-      // var person_array_remote=person_array.filter(function(value, index, array ) {
-      //   if (value.srcObject!=null){
-      //     return value;
-      //   }
-      // });
-      // person_array_remote.forEach(remoteVideo => {
-      //   remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-      //   remoteVideo.cc = null;
-      // });
-
-
-      // console.log(person_array_remote);
-      // Array.from(person_array_remote).forEach(remoteVideo => {
-      //   remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-      //   remoteVideo.srcObject = null;
-      //   remoteVideo.remove();
-      // });
     }
 
     function audio_toggle(){
@@ -249,12 +231,12 @@ async function skyway_main() {
         if (track.enabled){
           track.enabled = false;
           console.log('audio off');
-          audioMuteTriger.textContent="ミュート解除"
+          audioMuteTriger.textContent="音声：OFF"
         }
         else{
           track.enabled = true;
           console.log('audio on');
-          audioMuteTriger.textContent="ミュート"
+          audioMuteTriger.textContent="音声：ON"
         }
         audio_state=track.enabled;
       });
@@ -265,12 +247,12 @@ async function skyway_main() {
         if (track.enabled){
           track.enabled = false;
           console.log('video off');
-          videoMuteTriger.textContent="ビデオの開始"
+          videoMuteTriger.textContent="ビデオ：OFF"
         }
         else{
           track.enabled = true;
           console.log('video on');
-          videoMuteTriger.textContent="ビデオの停止"
+          videoMuteTriger.textContent="ビデオ：ON"
         }
         video_state=track.enabled;
       });
@@ -298,17 +280,7 @@ function skyway_disconnect(){
   console.log('socket disconnection is detected in skyway.js');
   disconnect_count++;
   room.close();
-  // close_myself();
   peer.destroy();
-  // socket.removeListener('disconnected', skyway_disconnect);
-
-  // person_array.forEach(element => {
-  //   if(element.srcObject!=null){
-  //     element.srcObject.getTracks().forEach(track => track.stop());
-  //     element.srcObject = null;      
-  //   }
-  // }
-  // );
 }
 
 socket.on('disconnected',skyway_disconnect);
