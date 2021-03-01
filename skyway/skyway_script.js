@@ -113,6 +113,7 @@ async function skyway_main() {
   console.log("disconnect count:",disconnect_count);
   console.log(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY));
   // const peer = (window.peer = new Peer(roomid+"_"+yourid,{
+
   peer = (window.peer = new Peer(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY),{
     key: window.__SKYWAY_KEY__,
     debug: 1,
@@ -146,7 +147,9 @@ async function skyway_main() {
       var stream_index;
       console.log('obtained peer id is '+stream.peerId);
       // stream_index=stream.peerId.split('_')[1]-1;
+
       stream_index=(stream.peerId.split('_')[1]-1)%ROOM_CAPACITY;
+
       person_array[stream_index].srcObject = stream;
       person_array[stream_index].playsInline = true;
       person_array[stream_index].setAttribute('data-peer-id', stream.peerId);
@@ -277,6 +280,8 @@ async function skyway_main() {
       result=window.confirm("本当に退出しますか？");
       if(result){
         room.close();
+        window.open('/static/leave.html', '_self').close();
+
       }
     }
 
