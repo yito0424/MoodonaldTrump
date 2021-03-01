@@ -3,6 +3,8 @@ let video_state=true;
 let audio_state=true;
 let disconnect_count=0;
 const ROOM_CAPACITY=4;
+let room;
+let peer;
 
 function wait_sleep() {
   return new Promise(resolve => {
@@ -111,7 +113,8 @@ async function skyway_main() {
   console.log("disconnect count:",disconnect_count);
   console.log(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY));
   // const peer = (window.peer = new Peer(roomid+"_"+yourid,{
-  const peer = (window.peer = new Peer(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY),{
+
+  peer = (window.peer = new Peer(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY),{
     key: window.__SKYWAY_KEY__,
     debug: 1,
   }));
@@ -126,7 +129,7 @@ async function skyway_main() {
       return;
     }
     
-    const room = peer.joinRoom(roomid, {
+    room = peer.joinRoom(roomid, {
       mode: getRoomModeByHash,
       stream: localStream,
     });
@@ -144,7 +147,9 @@ async function skyway_main() {
       var stream_index;
       console.log('obtained peer id is '+stream.peerId);
       // stream_index=stream.peerId.split('_')[1]-1;
-      stream_index=stream.peerId.split('_')[1]%ROOM_CAPACITY-1;
+
+      stream_index=(stream.peerId.split('_')[1]-1)%ROOM_CAPACITY;
+
       person_array[stream_index].srcObject = stream;
       person_array[stream_index].playsInline = true;
       person_array[stream_index].setAttribute('data-peer-id', stream.peerId);
@@ -275,28 +280,10 @@ async function skyway_main() {
       result=window.confirm("本当に退出しますか？");
       if(result){
         room.close();
-        // window.open('about:blank', '_self').close();
         window.open('/static/leave.html', '_self').close();
 
       }
     }
-
-    socket.on('disconnected',()=>{
-      console.log('socket disconnection is detected in skyway.js');
-      disconnect_count++;
-      socket.removeAllListeners('disconnected');
-      room.close();
-      // close_myself();
-      peer.destroy();
-
-      // person_array.forEach(element => {
-      //   if(element.srcObject!=null){
-      //     element.srcObject.getTracks().forEach(track => track.stop());
-      //     element.srcObject = null;      
-      //   }
-      // }
-      // );
-  });
 
     audioMuteTriger.addEventListener('click', audio_toggle); // 音声のミュート切り替え
     videoMuteTriger.addEventListener('click', video_toggle); // ビデオのオンオフ切り替え
@@ -306,3 +293,22 @@ async function skyway_main() {
 
   peer.on('error', console.error);
 };
+
+function skyway_disconnect(){
+  console.log('socket disconnection is detected in skyway.js');
+  disconnect_count++;
+  room.close();
+  // close_myself();
+  peer.destroy();
+  // socket.removeListener('disconnected', skyway_disconnect);
+
+  // person_array.forEach(element => {
+  //   if(element.srcObject!=null){
+  //     element.srcObject.getTracks().forEach(track => track.stop());
+  //     element.srcObject = null;      
+  //   }
+  // }
+  // );
+}
+
+socket.on('disconnected',skyway_disconnect);

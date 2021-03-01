@@ -433,6 +433,7 @@ function move_card(event){
 
 // カーソルに合わせて指を動かす
 function move_cursor(event){
+    if(Object.keys(player_list).length==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
     var x=event.clientX-canvasrect.left;
@@ -472,9 +473,7 @@ socket.on('started',(player_num)=>{
     startflag=1;
     console.log('1にしました');
     if(skyway_reconnect){
-        promise_skyway.then(HandDetection);
-    }else{
-        HandDetection();
+        promise_skyway;
     }
     StartMsg.innerHTML='';
     var win_msg_list=document.getElementsByClassName('win-msg');
@@ -652,6 +651,9 @@ socket.on('leaved-after-finish',()=>{
     if(detect_interval){
         console.log('手検出を停止');
         clearInterval(detect_interval);
+        detect_interval = null;
+        HandposeButton.textContent = '手検出：OFF'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));')
     }
     // youridを一旦リセット
     const temp_yourid = yourid;
@@ -670,6 +672,9 @@ socket.on('leaved-after-disconnect',()=>{
     if(detect_interval){
         console.log('手検出を停止');
         clearInterval(detect_interval);
+        detect_interval = null;
+        HandposeButton.textContent = '手検出：OFF'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));')
     }
     // youridを一旦リセット
     yourid = null;
@@ -680,7 +685,7 @@ socket.on('leaved-after-disconnect',()=>{
 })
 //roomidがURLに設定されていない場合
 socket.on('roomid-is-empty',()=>{
-    alert('URLの末尾にルームIDを設定してください');
+    alert('部屋名が設定されていません');
 })
 //クライアントの同時接続数が16人を超えた
 socket.on('rejected', ()=>{

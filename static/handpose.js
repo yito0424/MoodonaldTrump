@@ -6,16 +6,38 @@ var card_hold_flag=0;
 var moved_card=null;
 var moved_card_idx=null;
 var myCanvas;
-var detect_interval;
+let detect_interval = null;
+const HandposeButton = document.getElementById('handpose-button');
+var net = null;
 
 async function HandDetection(){
+    if(detect_interval != null){return;}
     video=document.getElementById(PlayerIdtoVideo[yourid]);
     myCanvas=document.getElementById(CanvasIdtoName[yourid]);
-    const net=await handpose.load();
-    console.log("loaded");
+    if(net == null){
+        net = await handpose.load();
+        console.log("loaded");
+    }
     detect_interval = setInterval(()=>{
         detect(net);
     },100);
+    HandposeButton.textContent = '手検出：ON'
+    HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #FF006E,#FFD500);');
+}
+
+function changeHandposeStatus(){
+    if(detect_interval == null){
+        console.log('手検出を開始');
+        HandDetection();
+        HandposeButton.textContent = '手検出：ON'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #FF006E,#FFD500);')
+    }else{
+        console.log('手検出を停止');
+        clearInterval(detect_interval);
+        detect_interval = null;
+        HandposeButton.textContent = '手検出：OFF'
+        HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #6b6b6b, rgb(190, 190, 190));')
+    }
 }
 
 async function detect(net){
