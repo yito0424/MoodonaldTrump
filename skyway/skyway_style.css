@@ -68,22 +68,13 @@
   left: 0;
 }
 
-#audio_mute_trigger{
-  position: relative;
-}
-
-#video_mute_trigger{
-  position: relative;
-}
-
 .mute_button{
+  position: relative;
   background:rgb(0, 119, 255);
   /* background: #daa520; */
   /* background-color: #daa520; */
   background-color: rgb(0, 132, 255);
-
   background-image: linear-gradient(-90deg, rgb(18, 97, 172),rgb(0, 132, 255));
-
   border-color: #daa520;
   /* border: none; */
   padding: 6px 10px;
@@ -91,5 +82,5 @@
   color: #fff;
   font-family: 'Roboto', sans-serif;
   z-index: 9999;
-  margin: 15px;
+  margin: auto 15px;
 }

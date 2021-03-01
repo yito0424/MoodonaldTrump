@@ -137,7 +137,7 @@ html{
     transition: .5s;
     background-size: 200%;
     position: relative;
-    margin: 40px;
+    margin: auto 40px;
     margin-left: 40px;
     z-index: 9999;
 }
@@ -157,12 +157,12 @@ html{
 
 .button-bar{
     position: relative;
-    margin-left: auto;
-    margin-right: auto;
     float:left;
     width: 100%;
     height: 10%;
     background-color: rgb(14, 21, 34);
+    margin: 0 auto;
+    
 }
 
 #room-id-msg{
@@ -174,6 +174,7 @@ html{
     width:20%;
     color: white;
     z-index: 3;
+
 }
 
 #leave-button{
@@ -198,6 +199,9 @@ html{
     background-image: linear-gradient(-90deg, #bd1960,#FF006E);
     background-size: 200%;
     position: relative;
-    margin: 40px;
+    margin: auto 40px;
     z-index: 9999;
+    /* position: absolute;
+    top: 50%;
+    margin-top: -16px; */
   }
