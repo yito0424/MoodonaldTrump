@@ -50,14 +50,14 @@ async function skyway_main() {
     localStream.getAudioTracks().forEach((track) => {
       if(!audio_state){
         track.enabled = false;
-        audioMuteTriger.textContent="ミュート解除"
+        audioMuteTriger.textContent="音声OFF"
       }
     });
 
     localStream.getVideoTracks().forEach((track) => {
       if(!video_state){
         track.enabled = false;
-        videoMuteTriger.textContent="ビデオの開始"
+        videoMuteTriger.textContent="ビデオOFF"
       }
     });
 
@@ -249,12 +249,12 @@ async function skyway_main() {
         if (track.enabled){
           track.enabled = false;
           console.log('audio off');
-          audioMuteTriger.textContent="ミュート解除"
+          audioMuteTriger.textContent="音声OFF"
         }
         else{
           track.enabled = true;
           console.log('audio on');
-          audioMuteTriger.textContent="ミュート"
+          audioMuteTriger.textContent="音声ON"
         }
         audio_state=track.enabled;
       });
@@ -265,12 +265,12 @@ async function skyway_main() {
         if (track.enabled){
           track.enabled = false;
           console.log('video off');
-          videoMuteTriger.textContent="ビデオの開始"
+          videoMuteTriger.textContent="ビデオOFF"
         }
         else{
           track.enabled = true;
           console.log('video on');
-          videoMuteTriger.textContent="ビデオの停止"
+          videoMuteTriger.textContent="ビデオON"
         }
         video_state=track.enabled;
       });
