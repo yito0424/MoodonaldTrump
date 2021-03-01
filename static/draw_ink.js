@@ -5,7 +5,9 @@ var inkFlag=0;
 var inkCanvasImgList={}
 const SkillMsg=document.getElementById('skill-msg')
 
-
+function scrollBottom(){
+    window.scroll(0, 10000000);
+}
 
 function setInkFlag(){
     if(startflag==0){return;}
@@ -23,9 +25,12 @@ function setInkFlag(){
 }
 
 //インクは一人だけ
-socket.on('can-ink',()=>{
+socket.on('can-ink', ()=>{
     console.log("インク");
-    if(inkFlag!=2){SkillMsg.innerHTML='インクをかけるプレイヤーを選択してください';}
+    if(inkFlag!=2){
+        SkillMsg.innerHTML='インクをかけるプレイヤーを選択してください';
+        scrollBottom();
+    }
     if(inkFlag==0){
         inkFlag=1;
         inkButton.textContent='中止';//変更0226
@@ -37,6 +42,7 @@ socket.on('can-ink',()=>{
 socket.on('inuse-ink',()=>{
     if(inkFlag!=1)
         SkillMsg.innerHTML='他プレイヤーが使用中';
+        scrollBottom();
         setTimeout(()=>{SkillMsg.innerHTML='';},5000);
 })
 
