@@ -359,6 +359,7 @@ function draw_card(canvas_name,context,ink_ctx,card){
 function choose_or_paint_card(event){
     console.log('スタートフラッグが0?');
     if(startflag==0){return;}
+    if(Object.keys(player_list).length==0){return;}
     if(inkFlag==1){chooseInkArea(event); return;}
     var canvasrect = this.canvas.getBoundingClientRect();
     const x=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
@@ -387,6 +388,7 @@ function choose_or_paint_card(event){
 // カードを移動させる
 function move_card(event){
     if(startflag==0){return;}
+    if(Object.keys(player_list).length==0){return;}
     let canvas=this.canvas;
     var canvasrect = canvas.getBoundingClientRect();
     var x=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];

@@ -15,7 +15,7 @@ async function load_handpose(){
     console.log("handpose loaded");
 }
 
-async function HandDetection(){
+function HandDetection(){
     if(detect_interval != null){return;}
     if(yourid == null){
         console.log('youridが無効です');
