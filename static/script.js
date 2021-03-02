@@ -195,7 +195,7 @@ window.addEventListener("resize",()=>{
 function get_query(){
     roomid=prompt('部屋名を入力してください。（任意の英数字の文字列）',  '例：room1');
     roomIdMsg.textContent='Room ID : '+roomid;
-    console.log('roomidに'+roomid+'を設定')
+    // console.log('roomidに'+roomid+'を設定');
 }
 
 // get_queryの次に実行
@@ -246,7 +246,7 @@ function load_img(){
     elem5.setAttribute('style','display:none;');
     ImageLoader.appendChild(elem5);
 
-    console.log('all image loaded');
+    // console.log('all image loaded');
 }
 // スキルを使用済みかどうか（1なら使用済み）
 var skill_flag=0;
@@ -357,7 +357,7 @@ function draw_card(canvas_name,context,ink_ctx,card){
 // カードを引くorインクをかける
 // スキルボタンが押された状態ならインクかける処理を優先 
 function choose_or_paint_card(event){
-    console.log('スタートフラッグが0?');
+    // console.log('スタートフラッグが0?');
     if(startflag==0){return;}
     if(Object.keys(player_list).length==0){return;}
     if(inkFlag==1){chooseInkArea(event); return;}
@@ -366,9 +366,9 @@ function choose_or_paint_card(event){
     const y=(event.clientY-canvasrect.top)/canvas_scale_list[InkOnlyCanvasNametoId[this.canvas.id]];
     var pull_player=player_list[yourid];
     var pulled_player=player_list[InkOnlyCanvasNametoId[this.canvas.id]];
-    console.log('x'+x);
-    console.log('y'+y);
-    console.log('canvasnametoid'+InkOnlyCanvasNametoId[this.canvas.id]);
+    // console.log('x'+x);
+    // console.log('y'+y);
+    // console.log('canvasnametoid'+InkOnlyCanvasNametoId[this.canvas.id]);
     if(pull_player.status=='pull' && pulled_player.status=='pulled'){
         var pulled_card=null;
         var pulled_card_idx=null;
@@ -381,7 +381,7 @@ function choose_or_paint_card(event){
         });
         if(pulled_card==null){return;}
         socket.emit('pull',yourid,pulled_player.id,pulled_card,pulled_card_idx);
-        console.log('pullしました');
+        // console.log('pullしました');
     }
 }
 
@@ -459,7 +459,7 @@ function getReverseCardList(cardlist){
 }
 // 自分が入室したことがサーバに伝わった
 socket.on('joined',(pid)=>{
-    console.log('player '+pid+' Joined');
+    // console.log('player '+pid+' Joined');
     yourid=pid;
     if(skyway_reconnect){
         promise_skyway = skyway_main();
@@ -473,7 +473,7 @@ socket.on('reject',()=>{
 // ゲームがスタートした
 socket.on('started',(player_num)=>{
     startflag=1;
-    console.log('1にしました');
+    // console.log('1にしました');
     if(skyway_reconnect){
         promise_skyway;
     }
@@ -520,7 +520,7 @@ async function wait_and_reset(sec,reset_flag){
             ink_ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
         startflag=0;
-        console.log('0にしました');
+        // console.log('0にしました');
     }
     StartMsg.innerHTML='Press Space to Start';
 }
@@ -537,12 +537,12 @@ document.addEventListener('keydown', (event) => {
 });
 // 使わない
 socket.on('pushed',()=>{
-    console.log('get return');
+    // console.log('get return');
 });
 
 // カードが全てのプレイヤーに分配された
 socket.on('distributed',(players)=>{
-    console.log('Shuffled and Distributed cards');
+    // console.log('Shuffled and Distributed cards');
     // 各プレイヤーのキャンバスにカードを描画
     Object.values(players).forEach((player,idx)=>{
             const canvas=document.getElementById(CanvasIdtoName[player.id]);
@@ -638,7 +638,7 @@ socket.on('over-notice',()=>{
 
 // プレイヤーの誰かが接続を切断した
 socket.on('disconnected',()=>{
-    console.log("disconnected");
+    // console.log("disconnected");
     StartMsg.innerHTML='Someone disconnected';
     player_list={};
     inkFlag=0;
@@ -651,7 +651,7 @@ socket.on('leaved-after-finish',()=>{
     skyway_reconnect = false;
     // 手検出のインターバルをクリア
     if(detect_interval){
-        console.log('手検出を停止');
+        // console.log('手検出を停止');
         clearInterval(detect_interval);
         detect_interval = null;
         HandposeButton.textContent = '手検出：OFF'
@@ -672,7 +672,7 @@ socket.on('leaved-after-disconnect',()=>{
     skyway_reconnect = true;
     // 手検出のインターバルをクリア
     if(detect_interval){
-        console.log('手検出を停止');
+        // console.log('手検出を停止');
         clearInterval(detect_interval);
         detect_interval = null;
         HandposeButton.textContent = '手検出：OFF'

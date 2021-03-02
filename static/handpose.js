@@ -12,19 +12,19 @@ var net = null;
 
 async function load_handpose(){
     net = await handpose.load();
-    console.log("handpose loaded");
+    // console.log("handpose loaded");
 }
 
 function HandDetection(){
     if(detect_interval != null){return;}
     if(yourid == null){
-        console.log('youridが無効です');
+        // console.log('youridが無効です');
         return;
     }
     video=document.getElementById(PlayerIdtoVideo[yourid]);
     myCanvas=document.getElementById(CanvasIdtoName[yourid]);
     if(net == null){
-        console.log('handpose model have not been loaded yet');
+        // console.log('handpose model have not been loaded yet');
         return;
     }
     detect_interval = setInterval(()=>{
@@ -36,12 +36,12 @@ function HandDetection(){
 
 function changeHandposeStatus(){
     if(detect_interval == null){
-        console.log('手検出を開始');
+        // console.log('手検出を開始');
         HandDetection();
         HandposeButton.textContent = '手検出：ON'
         HandposeButton.setAttribute('style', 'background-image:linear-gradient(-90deg, #FF006E,#FFD500);')
     }else{
-        console.log('手検出を停止');
+        // console.log('手検出を停止');
         clearInterval(detect_interval);
         detect_interval = null;
         HandposeButton.textContent = '手検出：OFF'
@@ -61,7 +61,7 @@ async function detect(net){
         if(hand_not_exist_times>=4){
             //カードをリリース
             if(moved_card!=null){
-                console.log("カードを自動リリース");
+                // console.log("カードを自動リリース");
                 hand_not_exist_times=0;
                 moved_card=null;
                 moved_card_idx=null;
@@ -124,12 +124,12 @@ function OpenCloseJudger(predictions){
             // console.log(i+":"+sum_angle);
             if(sum_angle>=320){open_finger_num++;}
         })
-        console.log("ここまで実行");
+        // console.log("ここまで実行");
         if(open_finger_num>=3){
             //if hand is opened
             if(card_hold_flag==1){
                 //カードをリリース
-                console.log("カードをリリース");
+                // console.log("カードをリリース");
                 moved_card=null;
                 moved_card_idx=null;
                 hand_not_exist_times=0;
@@ -139,10 +139,10 @@ function OpenCloseJudger(predictions){
             //if hand is closed
             if(card_hold_flag==0){
                 //カードをつかむ
-                console.log("カードをつかむ");
+                // console.log("カードをつかむ");
                 grip_card(center);
             }else{
-                console.log("カードを動かす");
+                // console.log("カードを動かす");
                 move_card_byhand(center);
             }
         };
@@ -183,7 +183,7 @@ function grip_card(center){
         });
     }
     if(moved_card!=null){
-        console.log("つかんだ");
+        // console.log("つかんだ");
         card_hold_flag=1;
         socket.emit('move',yourid,moved_card,moved_card_idx);
         moved_card_idx=moved_player.cardlist.length-1

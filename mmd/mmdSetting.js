@@ -112,7 +112,7 @@ function start_mmd(){
  * And, Get Vmd Loop Event
  */
 VmdControl = (id, loop,direction) => {
-  console.log("vmd");
+  // console.log("vmd");
   mmdcanvas=document.querySelector('#mmd-model');
   mmdcanvas.style.zIndex=3;
   //cameraの作成
@@ -132,7 +132,7 @@ VmdControl = (id, loop,direction) => {
       frontBehind=-frontBehind;
       break;
     default:
-      console.log("cannot specify direction");
+      // console.log("cannot specify direction");
       break;
   }
 
@@ -146,7 +146,7 @@ VmdControl = (id, loop,direction) => {
 
   // Not Found id
   if (index === -1) {
-    console.log("not Found ID");
+    // console.log("not Found ID");
     return;
   }
 
@@ -172,7 +172,7 @@ VmdControl = (id, loop,direction) => {
 
   // VMD Loop Once Event
   mixer.addEventListener("finished", (event) => {
-    console.log("finished");
+    // console.log("finished");
     scene.remove(scene.children[1]);
     mmdcanvas.style.zIndex=0;
   });
@@ -187,7 +187,7 @@ VmdControl = (id, loop,direction) => {
 onProgress = (xhr) => {
   if (xhr.lengthComputable) {
     const percentComplete = xhr.loaded / xhr.total * 100;
-    console.log(Math.round(percentComplete, 2) + '% downloaded');
+    // console.log(Math.round(percentComplete, 2) + '% downloaded');
   }
 }
 
@@ -195,7 +195,7 @@ onProgress = (xhr) => {
  * loading error
  */
 onError = (xhr) => {
-  console.log("ERROR");
+  // console.log("ERROR");
 }
 
 /*

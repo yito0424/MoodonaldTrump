@@ -26,7 +26,7 @@ function setInkFlag(){
 
 //インクは一人だけ
 socket.on('can-ink', ()=>{
-    console.log("インク");
+    // console.log("インク");
     if(inkFlag!=2){
         SkillMsg.innerHTML='インクをかけるプレイヤーを選択してください';
         scrollBottom();
@@ -51,9 +51,9 @@ function chooseInkArea(event){
     inkFlag=2; //以降はインクを使えない
     inkButton.textContent="使用済";
     if(startflag==0){return;}
-    console.log(event.currentTarget.id);
+    // console.log(event.currentTarget.id);
     var canvasrect = event.currentTarget.getBoundingClientRect();
-    console.log(canvasrect);
+    // console.log(canvasrect);
     const x=(event.clientX-canvasrect.left)/canvas_scale_list[InkOnlyCanvasNametoId[event.currentTarget.id]];
     const y=(event.clientY-canvasrect.top)/canvas_scale_list[InkOnlyCanvasNametoId[event.currentTarget.id]];
     SkillMsg.innerHTML='';
@@ -71,7 +71,7 @@ function hide(alart_img)
 }
 
 socket.on('shotted',(shot_id,shotted_id,x,y)=>{
-    console.log('skill発動');
+    // console.log('skill発動');
     const alart_img=document.getElementById("alart_img");
 
     if(shotted_id==1){
@@ -96,7 +96,7 @@ socket.on('shotted',(shot_id,shotted_id,x,y)=>{
         setTimeout(()=>{hide(alart_img);},i+500);
     }
     setTimeout(()=>{
-        console.log('x:'+x+'y:'+y);
+        // console.log('x:'+x+'y:'+y);
         var inkCanvas=document.getElementById('ink-canvas'+shotted_id);
         var shotted_card_list=[];
         var shotted_card_idx_list=[];
@@ -138,6 +138,6 @@ socket.on('shotted',(shot_id,shotted_id,x,y)=>{
         setTimeout(()=>{
             trans_ctx.clearRect(0,0,inkOnlyCanvas.width,inkOnlyCanvas.height);
         },5000);
-        console.log("終了");
+        // console.log("終了");
     },5000);
 })

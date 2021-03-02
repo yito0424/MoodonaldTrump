@@ -61,7 +61,7 @@ async function skyway_main() {
       }
     });
 
-  console.log('your id is',yourid);
+  // console.log('your id is',yourid);
   
   // 自分のビデオを映す
   person_array[yourid-1].muted = true;
@@ -110,8 +110,8 @@ async function skyway_main() {
   }
 
   // eslint-disable-next-line require-atomic-updates
-  console.log("disconnect count:",disconnect_count);
-  console.log(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY));
+  // console.log("disconnect count:",disconnect_count);
+  // console.log(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY));
   // const peer = (window.peer = new Peer(roomid+"_"+yourid,{
 
   peer = (window.peer = new Peer(roomid+"_"+(yourid+disconnect_count*ROOM_CAPACITY),{
@@ -125,7 +125,7 @@ async function skyway_main() {
   wait_sleep().then(result => {
 
     if (!peer.open) {
-      console.log("peer is not open");
+      // console.log("peer is not open");
       return;
     }
     
@@ -135,17 +135,17 @@ async function skyway_main() {
     });
     
     room.once('open', () => {
-      console.log('=== You joined ===\n');
+      // console.log('=== You joined ===\n');
     });
     room.on('peerJoin', peerId => {
-      console.log(`=== ${peerId} joined ===\n`);
+      // console.log(`=== ${peerId} joined ===\n`);
     });
     
 
     // Render remote stream for new peer join in the room
     room.on('stream', async stream => {
       var stream_index;
-      console.log('obtained peer id is '+stream.peerId);
+      // console.log('obtained peer id is '+stream.peerId);
       // stream_index=stream.peerId.split('_')[1]-1;
 
       stream_index=(stream.peerId.split('_')[1]-1)%ROOM_CAPACITY;
@@ -208,7 +208,7 @@ async function skyway_main() {
       })[0];
       remoteVideo.srcObject.getTracks().forEach(track => track.stop());
       remoteVideo.srcObject = null;
-      console.log(`=== ${peerId} left ===\n`);
+      // console.log(`=== ${peerId} left ===\n`);
     }
 
 
@@ -216,7 +216,7 @@ async function skyway_main() {
     room.once('close', close_myself);
 
     function close_myself(){
-      console.log('== You left ===\n');
+      // console.log('== You left ===\n');
       person_array.forEach(element => {
         if(element.srcObject!=null){
           element.srcObject.getTracks().forEach(track => track.stop());
@@ -230,12 +230,12 @@ async function skyway_main() {
       localStream.getAudioTracks().forEach((track) => {
         if (track.enabled){
           track.enabled = false;
-          console.log('audio off');
+          // console.log('audio off');
           audioMuteTriger.textContent="音声：OFF"
         }
         else{
           track.enabled = true;
-          console.log('audio on');
+          // console.log('audio on');
           audioMuteTriger.textContent="音声：ON"
         }
         audio_state=track.enabled;
@@ -246,12 +246,12 @@ async function skyway_main() {
       localStream.getVideoTracks().forEach((track) => {
         if (track.enabled){
           track.enabled = false;
-          console.log('video off');
+          // console.log('video off');
           videoMuteTriger.textContent="ビデオ：OFF"
         }
         else{
           track.enabled = true;
-          console.log('video on');
+          // console.log('video on');
           videoMuteTriger.textContent="ビデオ：ON"
         }
         video_state=track.enabled;
@@ -277,7 +277,7 @@ async function skyway_main() {
 };
 
 function skyway_disconnect(){
-  console.log('socket disconnection is detected in skyway.js');
+  // console.log('socket disconnection is detected in skyway.js');
   disconnect_count++;
   room.close();
   peer.destroy();
